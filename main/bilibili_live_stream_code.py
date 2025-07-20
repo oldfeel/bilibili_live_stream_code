@@ -39,7 +39,13 @@ last_settings_file = 'last_settings.json'
 my_path = os.getcwd()
 
 def appsign(params, appkey, appsec):
-    '为请求参数进行 APP 签名'
+    """
+    为请求参数进行app签名
+    :param params: 原参数
+    :param appkey: key
+    :param appsec: key对应的secret
+    :return:
+    """
     params.update({'appkey': appkey})
     params = dict(sorted(params.items())) # 按照 key 重排参数
     query = urllib.parse.urlencode(params) # 序列化参数

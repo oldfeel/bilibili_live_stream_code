@@ -4,20 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="06b83f79-c93e-41da-b351-86c61f5878b5" name="更改" comment="docs: 新建分支，此分支将成为主分支">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/GetCookies.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/bilibili_live_stream_code.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/bullet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/config.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/get_wbi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/partition.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/update_partition.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/util.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main/使用说明.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="06b83f79-c93e-41da-b351-86c61f5878b5" name="更改" comment="build: 暂时性迁移，后续将进行代码的重构" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -118,7 +105,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1752972592563</updated>
-      <workItem from="1752972593615" duration="2823000" />
+      <workItem from="1752972593615" duration="3206000" />
     </task>
     <task id="LOCAL-00001" summary="docs: 新建分支，此分支将成为主分支">
       <option name="closed" value="true" />
@@ -128,7 +115,15 @@
       <option name="project" value="LOCAL" />
       <updated>1752973368465</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="build: 暂时性迁移，后续将进行代码的重构">
+      <option name="closed" value="true" />
+      <created>1752975621881</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1752975621881</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -136,7 +131,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="docs: 新建分支，此分支将成为主分支" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs: 新建分支，此分支将成为主分支" />
+    <MESSAGE value="build: 暂时性迁移，后续将进行代码的重构" />
+    <option name="LAST_COMMIT_MESSAGE" value="build: 暂时性迁移，后续将进行代码的重构" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/bilibili_live_stream_code$bilibili_live_stream_code.coverage" NAME="bilibili_live_stream_code 覆盖结果" MODIFIED="1752975185812" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/main" />
