@@ -27,10 +27,10 @@ from PIL import ImageTk, Image
 
 # 导入原始模块
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from main.GetCookies import get_cookies
-from main import data as dt
-from main.update_partition import get_new_partition
-from main.bullet import send_bullet
+from GetCookies import get_cookies
+import data as dt
+from update_partition import get_new_partition
+from bullet import send_bullet
 import util
 
 # 全局变量
