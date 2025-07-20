@@ -3,11 +3,12 @@
 
 作者：Chace
 
-版本：0.2.1
+版本：1.0.0
 
 更新时间：2025-07-20
 """
 import hashlib
+import io
 import json
 import tkinter as tk
 import urllib
@@ -22,7 +23,7 @@ import ctypes
 from ctypes import wintypes
 import webbrowser
 import qrcode
-from PIL import ImageTk
+from PIL import ImageTk, Image
 
 # 导入原始模块
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -111,6 +112,8 @@ class BiliLiveGUI:
         self.live_title = tk.StringVar(value="我的B站直播")
         self.live_code = tk.StringVar()
         self.live_server = tk.StringVar()
+        self.avatar_image_label = tk.Label
+        self.avatar_image = ImageTk.PhotoImage(file=os.path.join(my_path, 'B站图标.ico'))
 
         # 分区数据
         self.partition_data = {}
@@ -124,19 +127,21 @@ class BiliLiveGUI:
         self.create_live_tab()
         self.create_result_tab()
 
-        self.update_partition_ui()
-        self.load_last_settings()
-
         # 状态栏
         self.status_var = tk.StringVar()
         self.status_var.set("就绪")
         self.status_bar = ttk.Label(root, textvariable=self.status_var, style="Status.TLabel", anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
 
+        # 加载数据
+        self.use_cookies_file()
+        self.update_partition_ui()
+        self.load_last_settings()
+        self.show_up_info()
 
         # 检查首次运行
         self.check_first_run()
-        self.use_cookies_file()
+
 
     # 定义一个函数，用于设置窗口居中显示
     def center_window(self, width, height):
@@ -186,6 +191,59 @@ class BiliLiveGUI:
                                 "3. 获取推流码并开始直播\n"
                                 "4. 直播结束后点击'停止直播'\n\n"
                                 "详细使用说明：https://download.chacewebsite.cn/uploads/使用说明.txt")
+
+    def _show_up_info_thread(self):
+        cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
+        cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+        info_json = requests.get(url='https://api.bilibili.com/x/web-interface/nav', cookies=cookies,
+                                 headers=dt.header).json()
+        # print(info_json)
+
+        # 更新头像显示
+        avatar_url = info_json["data"]["face"]
+        response = requests.get(url=avatar_url, stream=True)
+        img_data = response.content
+        img = Image.open(io.BytesIO(img_data))
+        self.avatar_image = ImageTk.PhotoImage(img)
+        self.avatar_image_label.config(image=self.avatar_image)
+
+        # 更新昵称显示
+        name = info_json["data"]["uname"]
+        current_level = info_json["data"]["level_info"]["current_level"]
+        self.up_name_label.config(text=f"{name}（Lv.{current_level}）")
+
+        # 更新硬币显示
+        coin = info_json["data"]["money"]
+        self.coin_var.set(coin)
+
+        # 更新B币显示
+        bcoin = info_json["data"]["wallet"]["bcoin_balance"]
+        self.b_coin_var.set(bcoin)
+
+        # 更新成长值信息
+        growth = info_json["data"]["level_info"]["current_exp"]
+        next_level = int(current_level) + 1
+        need_growth = info_json["data"]["level_info"]["next_exp"]
+        self.growth_var.set(growth)
+        self.next_level_var.set(f"Lv.{next_level}")
+        self.need_growth_var.set(need_growth)
+
+        # 更新统计数据
+        stat_json = requests.get(url="https://api.bilibili.com/x/web-interface/nav/stat", cookies=cookies,
+                                 headers=dt.header).json()
+        follow = stat_json["data"]["following"]
+        fans = stat_json["data"]["follower"]
+        dynamic = stat_json["data"]["dynamic_count"]
+        self.follow_var.set(follow)
+        self.fans_var.set(fans)
+        self.dynamic_var.set(dynamic)
+
+    def show_up_info(self):
+        if self.cookie_str.get() == "":
+            return
+        else:
+            thread = threading.Thread(target=self._show_up_info_thread)
+            thread.start()
 
     def send_bullet_callback(self):
         """点击发送弹幕按钮时调用"""
@@ -275,6 +333,97 @@ class BiliLiveGUI:
         ttk.Button(setup_frame, text="查看使用说明", command=self.show_help).grid(
             row=5, column=0, pady=10, sticky="w"
         )
+
+        # UP信息展示部分
+        info_frame = ttk.LabelFrame(setup_frame, text="UP信息")
+        info_frame.grid(row=0, column=1, rowspan=5, sticky="nsew", padx=60, pady=10)
+
+        # 创建变量存储UP信息
+        self.coin_var = tk.StringVar(value="0")
+        self.b_coin_var = tk.StringVar(value="0")
+        self.growth_var = tk.StringVar(value="0")
+        self.next_level_var = tk.StringVar(value="Lv.0")
+        self.need_growth_var = tk.StringVar(value="0")
+        self.follow_var = tk.StringVar(value="0")
+        self.fans_var = tk.StringVar(value="0")
+        self.dynamic_var = tk.StringVar(value="0")
+
+        # 头像
+        avatar_frame = ttk.Frame(info_frame)
+        avatar_frame.pack(fill=tk.X, pady=(0, 10), anchor='center')  # 居中容器
+
+        self.avatar_image_label = ttk.Label(avatar_frame, image=self.avatar_image)
+        self.avatar_image_label.pack(anchor=tk.CENTER, pady=5)  # 头像居中
+
+        # UP名称
+        self.up_name_label = ttk.Label(avatar_frame, text="UP名称", font=("微软雅黑", 10, "bold"))
+        self.up_name_label.pack(anchor=tk.CENTER, pady=5)  # 名称居中
+
+        # 硬币和B币信息
+        coin_frame = ttk.Frame(info_frame)
+        coin_frame.pack(fill=tk.X, pady=5, anchor='center')  # 居中容器
+
+        # 硬币部分
+        coin_group = ttk.Frame(coin_frame)
+        coin_group.pack(side=tk.LEFT, expand=True)  # 使用expand实现居中
+        ttk.Label(coin_group, text="硬币：").pack(side=tk.LEFT, padx=(0, 2))
+        self.coin_label = ttk.Label(coin_group, textvariable=self.coin_var, foreground="blue")
+        self.coin_label.pack(side=tk.LEFT)
+
+        # B币部分
+        b_coin_group = ttk.Frame(coin_frame)
+        b_coin_group.pack(side=tk.LEFT, expand=True)  # 使用expand实现居中
+        ttk.Label(b_coin_group, text="B币：").pack(side=tk.LEFT, padx=(0, 2))
+        self.b_coin_label = ttk.Label(b_coin_group, textvariable=self.b_coin_var, foreground="blue")
+        self.b_coin_label.pack(side=tk.LEFT)
+
+        # 成长值信息
+        growth_frame = ttk.Frame(info_frame)
+        growth_frame.pack(fill=tk.X, pady=5, anchor='center')  # 居中容器
+
+        # 将成长值所有部分放入同一框架并居中
+        growth_group = ttk.Frame(growth_frame)
+        growth_group.pack(anchor=tk.CENTER)  # 整体居中
+
+        ttk.Label(growth_group, text="当前成长").pack(side=tk.LEFT)
+        self.growth_label = ttk.Label(growth_group, textvariable=self.growth_var, foreground="green")
+        self.growth_label.pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(growth_group, text="，距离升级").pack(side=tk.LEFT)
+        self.next_level_label = ttk.Label(growth_group, textvariable=self.next_level_var, foreground="red")
+        self.next_level_label.pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(growth_group, text="还需要").pack(side=tk.LEFT)
+        self.need_growth_label = ttk.Label(growth_group, textvariable=self.need_growth_var, foreground="green")
+        self.need_growth_label.pack(side=tk.LEFT, padx=(0, 5))
+
+        # 统计数据 - 使用额外的框架包裹三个统计项
+        stats_container = ttk.Frame(info_frame)
+        stats_container.pack(pady=(15, 5), fill=tk.X, anchor='center')  # 居中容器
+
+        # 关注数
+        follow_frame = ttk.Frame(stats_container)
+        follow_frame.pack(side=tk.LEFT, padx=20, expand=True)  # 使用expand和fill
+
+        self.follow_label = ttk.Label(follow_frame, textvariable=self.follow_var, font=("微软雅黑", 12, "bold"), foreground="blue")
+        self.follow_label.pack(anchor=tk.CENTER)
+        ttk.Label(follow_frame, text="关注").pack(anchor=tk.CENTER)
+
+        # 粉丝数
+        fans_frame = ttk.Frame(stats_container)
+        fans_frame.pack(side=tk.LEFT, padx=20, expand=True)  # 使用expand和fill
+
+        self.fans_label = ttk.Label(fans_frame, textvariable=self.fans_var, font=("微软雅黑", 12, "bold"),
+                  foreground="red")
+        self.fans_label.pack(anchor=tk.CENTER)
+        ttk.Label(fans_frame, text="粉丝").pack(anchor=tk.CENTER)
+
+        # 动态数
+        dynamic_frame = ttk.Frame(stats_container)
+        dynamic_frame.pack(side=tk.LEFT, padx=20, expand=True)  # 使用expand和fill
+
+        self.dynamic_label = ttk.Label(dynamic_frame, textvariable=self.dynamic_var, font=("微软雅黑", 12, "bold"),
+                  foreground="purple")
+        self.dynamic_label.pack(anchor=tk.CENTER)
+        ttk.Label(dynamic_frame, text="动态").pack(anchor=tk.CENTER)
 
     def create_live_tab(self):
         """创建直播设置选项卡"""
@@ -618,8 +767,8 @@ class BiliLiveGUI:
                         self.cookie_str.set(value[1])
                         self.csrf.set(value[2])
                         self.log_message("成功加载cookies.txt文件")
-                        messagebox.showinfo("成功", "Cookies文件加载成功！")
-                        self.notebook.select(self.live_tab)
+                        # messagebox.showinfo("成功", "Cookies文件加载成功！")
+                        # self.notebook.select(self.live_tab)
                         self.root.focus_force()
                         # self.root.after(0, lambda: self.partition_cat.focus())
                     else:
@@ -627,8 +776,10 @@ class BiliLiveGUI:
             except Exception as e:
                 self.log_message(f"打开或读取cookies.txt文件时出错: {str(e)}")
                 messagebox.showerror("错误", f"打开或读取cookies.txt文件时出错:\n{str(e)}")
+                self.root.focus_force()
         else:
             messagebox.showwarning("警告", f"未找到{cookies_file}文件")
+            self.root.focus_force()
 
     def auto_get_cookies(self):
         """自动获取cookies"""
@@ -664,7 +815,8 @@ class BiliLiveGUI:
 
             self.log_message("账号信息保存成功！")
             messagebox.showinfo("成功", "账号信息保存成功！")
-            self.notebook.select(self.live_tab)
+            self.show_up_info()
+            # self.notebook.select(self.live_tab)
         except Exception as e:
             self.log_message(f"保存设置时出错: {str(e)}")
             messagebox.showerror("错误", f"保存设置时出错:\n{str(e)}")
