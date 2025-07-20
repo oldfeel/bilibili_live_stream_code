@@ -45,7 +45,7 @@
 4. 重构代码，将功能代码和UI代码独立。
 5. 在账号设置中的右侧空白处，显示UP主信息。√
 6. 适配Linux和mac。
-7. 整合版地址：[https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/v1.1.0](https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/v1.1.0)。
+7. 整合版地址：[https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/v1.1.1](https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/v1.1.1)。
 
 ## 英文版
 1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/READM-En.md
