@@ -3,7 +3,7 @@
 
 作者：Chace
 
-版本：1.0.0
+版本：1.0.1
 
 更新时间：2025-07-20
 """
@@ -19,8 +19,6 @@ import re
 from urllib.parse import unquote
 import sys
 import requests
-import ctypes
-from ctypes import wintypes
 import webbrowser
 import qrcode
 from PIL import ImageTk, Image
@@ -147,12 +145,6 @@ class BiliLiveGUI:
     def center_window(self, width, height):
         util.center_window(self.root, width, height)
 
-    def get_desktop_folder_path(self):
-        """读取注册表，获取桌面路径"""
-        buf = ctypes.create_unicode_buffer(wintypes.MAX_PATH)
-        ctypes.windll.shell32.SHGetFolderPathW(0, 0x0000, 0, 0, buf)
-        return buf.value
-
     def check_first_run(self):
         """检查是否是首次运行"""
         config_path = os.path.join(my_path, 'config.ini')
@@ -172,7 +164,8 @@ class BiliLiveGUI:
         help_path = os.path.join(my_path, '使用说明.txt')
         if os.path.exists(help_path):
             try:
-                os.startfile(help_path)
+                util.open_file(help_path)
+                # os.startfile(help_path)
             except:
                 messagebox.showinfo("使用说明",
                                     "欢迎使用B站推流码获取工具！\n\n"
@@ -1109,7 +1102,7 @@ class BiliLiveGUI:
             return
 
         try:
-            desktop = self.get_desktop_folder_path()
+            desktop = util.get_desktop_folder_path()
             file_path = os.path.join(desktop, code_file)
 
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -1121,7 +1114,7 @@ class BiliLiveGUI:
 
             # 打开文件
             try:
-                os.startfile(file_path)
+                util.open_file(file_path)
             except:
                 pass
 
