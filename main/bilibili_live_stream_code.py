@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.1
+版本：1.0.2
 
-更新时间：2025-07-20
+更新时间：2025-07-21
 """
 import hashlib
 import io
@@ -36,6 +36,7 @@ code_file = 'code.txt'
 cookies_file = 'cookies.txt'
 last_settings_file = 'last_settings.json'
 my_path = os.getcwd()
+now_version = "1.1.2"
 
 def appsign(params, appkey, appsec):
     """
@@ -65,7 +66,7 @@ class BiliLiveGUI:
 
         # 应用图标
         try:
-            icon_path = os.path.join(my_path, 'bilibili.ico')
+            icon_path = os.path.join(my_path, 'B站图标.ico')
             if os.path.exists(icon_path):
                 self.root.iconbitmap(icon_path)
         except:
@@ -125,11 +126,22 @@ class BiliLiveGUI:
         self.create_live_tab()
         self.create_result_tab()
 
+        # 版本号
+        self.version = now_version
+
         # 状态栏
         self.status_var = tk.StringVar()
         self.status_var.set("就绪")
-        self.status_bar = ttk.Label(root, textvariable=self.status_var, style="Status.TLabel", anchor=tk.W)
-        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
+        status_frame = ttk.Frame(root)
+        status_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
+
+        # 状态信息（左对齐）
+        self.status_bar = ttk.Label(status_frame, textvariable=self.status_var, style="Status.TLabel", anchor=tk.W)
+        self.status_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # 版本号（右对齐）
+        version_label = ttk.Label(status_frame, text=f"版本: {self.version}", style="Status.TLabel", anchor=tk.E)
+        version_label.pack(side=tk.RIGHT)
 
         # 加载数据
         self.use_cookies_file()
