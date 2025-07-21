@@ -3,7 +3,7 @@
 
 作者：Chace
 
-版本：1.0.2
+版本：1.0.3
 
 更新时间：2025-07-21
 """
@@ -15,7 +15,6 @@ import urllib
 from tkinter import ttk, messagebox, filedialog, scrolledtext
 import threading
 import os
-import re
 from urllib.parse import unquote
 import sys
 import requests
@@ -198,11 +197,9 @@ class BiliLiveGUI:
                                 "详细使用说明：https://download.chacewebsite.cn/uploads/使用说明.txt")
 
     def _show_up_info_thread(self):
-        cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-        cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+        cookies = util.ck_str_to_dict(self.cookie_str.get())
         info_json = requests.get(url='https://api.bilibili.com/x/web-interface/nav', cookies=cookies,
                                  headers=dt.header).json()
-        # print(info_json)
 
         # 更新头像显示
         avatar_url = info_json["data"]["face"]
@@ -262,8 +259,7 @@ class BiliLiveGUI:
             return
 
         # 转换为cookies字典
-        cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-        cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+        cookies = util.ck_str_to_dict(self.cookie_str.get())
 
         try:
             roomid = int(self.room_id.get())
@@ -690,8 +686,7 @@ class BiliLiveGUI:
 
 
             # 转换为cookies字典
-            cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-            cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+            cookies = util.ck_str_to_dict(self.cookie_str.get())
 
             # 发送设置标题请求
             response = requests.post(
@@ -735,8 +730,7 @@ class BiliLiveGUI:
             data['area_id'] = area_id
 
             # 转换为cookies字典
-            cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-            cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+            cookies = util.ck_str_to_dict(self.cookie_str.get())
 
             # 发送更新分区请求
             response = requests.post(
@@ -833,8 +827,7 @@ class BiliLiveGUI:
             return
 
         # 转换为cookies字典
-        cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-        cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+        cookies = util.ck_str_to_dict(self.cookie_str.get())
 
         self.log_message("正在获取直播分区...")
         threading.Thread(target=self._refresh_partitions_thread, args=(cookies,), daemon=True).start()
@@ -935,8 +928,7 @@ class BiliLiveGUI:
             # 准备请求参数
             header = dt.header
             # 转换为cookies字典
-            cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-            cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+            cookies = util.ck_str_to_dict(self.cookie_str.get())
             app_key = "aae92bc66f3edfab"
             app_sec = "af125a0d5279fd576c1b4418a3e8276d"
 
@@ -1058,8 +1050,7 @@ class BiliLiveGUI:
             data['csrf_token'] = data['csrf'] = self.csrf.get()
 
             # 转换为cookies字典
-            cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
-            cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+            cookies = util.ck_str_to_dict(self.cookie_str.get())
 
             # 发送停止直播请求
             response = requests.post(

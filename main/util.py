@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：0.1.1
+版本：0.1.2
 
-更新时间：2025-07-20
+更新时间：2025-07-21
 """
 import ctypes
 import tkinter
@@ -14,6 +14,8 @@ import sys
 import os
 from ctypes import wintypes
 from pathlib import Path
+import re
+from urllib.parse import unquote
 
 
 def center_window(root: tkinter.Tk or tkinter.Toplevel, width: int, height: int) -> None:
@@ -69,3 +71,14 @@ def get_desktop_folder_path():
 
         # 最终回退到HOME目录
         return str(Path.home())
+
+def ck_str_to_dict(ck_str: str) -> dict:
+    """
+    将字符串ck转为dict的ck
+
+    :param ck_str: 字符串ck
+    :return dict
+    """
+    cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
+    cookies = {key: unquote(value) for key, value in cookies_pattern.findall(ck_str)}
+    return cookies
