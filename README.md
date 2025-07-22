@@ -4,7 +4,7 @@
 
 ## 声明
 
-1. 本程序仅用于获取推流地址以及推流码，不会封号等等，任何与账号有关的问题概不负责。
+**本程序仅用于获取推流地址以及推流码，不会封号等等，任何与账号有关的问题概不负责。**
 
 ## 使用教程
 
@@ -33,19 +33,16 @@
 2. 如果误关了程序，再进行一遍上述操作即可。
 3. 获取的推流码仅可使用一次，再次直播时需重新获取。
 4. 保存的 Cookies 在一定时间内可重复使用（问就是我也不知道多久），若失效就再进行一遍上述操作即可。
+5. 如遇人脸识别，请使用客户端扫码，进行人脸识别。
 
 ## 其他
 
 1. 本程序作者：[Chace](https://github.com/ChaceQC)。  
 2. 本程序制作特别感谢：[琴子](https://github.com/Truble-Maker)，[Roberta001](https://github.com/Roberta001)。
+3. 感谢贡献者：[DarkModest](https://github.com/DarkModest)。
+
 ### TODO：
-1. 完全去除黑框框。√
-2. 将三个界面进行整合。√
-3. 整合后加入发送弹幕功能。√
-4. 重构代码，将功能代码和UI代码独立。
-5. 在账号设置中的右侧空白处，显示UP主信息。√
-6. 适配Linux和mac。√
-7. 整合版地址：[https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/v1.1.2](https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/v1.1.2)。
+暂无，欢迎提出需求。
 
 ## 英文版
 1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/READM-En.md
