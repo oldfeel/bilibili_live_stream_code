@@ -793,6 +793,8 @@ class BiliLiveGUI:
     def _auto_get_cookies_thread(self):
         try:
             room_id, cookie_str, csrf = get_cookies()
+            if not room_id or not cookie_str or not csrf:
+                raise Exception("请检查是否扫码成功。")
             self.room_id.set(room_id)
             self.cookie_str.set(cookie_str)
             self.csrf.set(csrf)
