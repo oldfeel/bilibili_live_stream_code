@@ -3,3 +3,4 @@
 /bilibili_live_stream_code.spec
 /dist/
 /build/
+/main/__pycache__/
