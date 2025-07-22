@@ -208,6 +208,7 @@ class BiliLiveGUI:
         response = requests.get(url=avatar_url, stream=True)
         img_data = response.content
         img = Image.open(io.BytesIO(img_data))
+        img = img.resize((150, 150))
         self.avatar_image = ImageTk.PhotoImage(img)
         self.avatar_image_label.config(image=self.avatar_image)
 
