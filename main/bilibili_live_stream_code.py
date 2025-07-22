@@ -491,6 +491,10 @@ class BiliLiveGUI:
         self.start_btn = ttk.Button(btn_frame, text="开始直播", command=self.start_live, style="Green.TButton")
         self.start_btn.pack(side=tk.RIGHT, padx=10)
 
+        # 进入直播间按钮
+        self.join_btn = ttk.Button(btn_frame, text="进入直播间", command=self.join_room, style="Blue.TButton")
+        self.join_btn.pack(side=tk.RIGHT, padx=10)
+
         # 日志区域
         log_frame = ttk.LabelFrame(live_frame, text="操作日志")
         log_frame.pack(fill=tk.BOTH, expand=True, pady=10)
@@ -923,6 +927,21 @@ class BiliLiveGUI:
 
         self.save_last_settings()
 
+    def join_room(self):
+        """进入直播间"""
+        if not self.room_id.get():
+            messagebox.showwarning("警告", "请先设置直播间ID！")
+            return
+
+        try:
+            room_id = int(self.room_id.get())
+            url = f"https://live.bilibili.com/{room_id}"
+            webbrowser.open(url)
+            self.log_message(f"已打开直播间: {url}")
+        except ValueError:
+            messagebox.showerror("错误", "直播间ID格式不正确！")
+            self.log_message("直播间ID格式不正确")
+    
     def _start_live_thread(self, area_id):
         try:
             # 准备请求参数
