@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.3
+版本：1.0.4
 
-更新时间：2025-07-21
+更新时间：2025-07-22
 """
 import hashlib
 import io
@@ -34,8 +34,11 @@ import util
 code_file = 'code.txt'
 cookies_file = 'cookies.txt'
 last_settings_file = 'last_settings.json'
+partition_file = 'partition.json'
+config_file = 'config.ini'
 my_path = os.getcwd()
-now_version = "1.1.2"
+now_version = "1.1.3"
+
 
 def appsign(params, appkey, appsec):
     """
@@ -46,10 +49,10 @@ def appsign(params, appkey, appsec):
     :return:
     """
     params.update({'appkey': appkey})
-    params = dict(sorted(params.items())) # 按照 key 重排参数
-    query = urllib.parse.urlencode(params) # 序列化参数
-    sign = hashlib.md5((query+appsec).encode()).hexdigest() # 计算 api 签名
-    params.update({'sign':sign})
+    params = dict(sorted(params.items()))  # 按照 key 重排参数
+    query = urllib.parse.urlencode(params)  # 序列化参数
+    sign = hashlib.md5((query + appsec).encode()).hexdigest()  # 计算 api 签名
+    params.update({'sign': sign})
     return params
 
 
@@ -58,7 +61,6 @@ class BiliLiveGUI:
         self.partition_cat = None
         self.root = root
         self.root.title("B站推流码获取工具")
-        # self.root.geometry("900x700")
         self.center_window(900, 700)
         self.root.resizable(False, False)
         self.root.configure(bg="#f0f0f0")
@@ -116,7 +118,6 @@ class BiliLiveGUI:
         # 分区数据
         self.partition_data = {}
         self.load_partition_data()
-        # self.root.after(0, self.update_partition_ui)
         self.selected_area = tk.StringVar()
         self.selected_sub_area = tk.StringVar()
 
@@ -151,14 +152,16 @@ class BiliLiveGUI:
         # 检查首次运行
         self.check_first_run()
 
+    def run(self):
+        self.root.mainloop()
 
-    # 定义一个函数，用于设置窗口居中显示
+    # 设置窗口居中显示
     def center_window(self, width, height):
         util.center_window(self.root, width, height)
 
     def check_first_run(self):
         """检查是否是首次运行"""
-        config_path = os.path.join(my_path, 'config.ini')
+        config_path = os.path.join(my_path, config_file)
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as file:
                 is_first = file.readline().split(':')[1].strip()
@@ -176,7 +179,6 @@ class BiliLiveGUI:
         if os.path.exists(help_path):
             try:
                 util.open_file(help_path)
-                # os.startfile(help_path)
             except:
                 messagebox.showinfo("使用说明",
                                     "欢迎使用B站推流码获取工具！\n\n"
@@ -241,6 +243,7 @@ class BiliLiveGUI:
         self.dynamic_var.set(dynamic)
 
     def show_up_info(self):
+        """显示UP主信息"""
         if self.cookie_str.get() == "":
             return
         else:
@@ -351,8 +354,7 @@ class BiliLiveGUI:
 
         # 头像
         avatar_frame = ttk.Frame(info_frame)
-        avatar_frame.pack(fill=tk.X, pady=(0, 10), anchor='center')  # 居中容器
-
+        avatar_frame.pack(fill=tk.X, pady=(0, 10), anchor='center')
         self.avatar_image_label = ttk.Label(avatar_frame, image=self.avatar_image)
         self.avatar_image_label.pack(anchor=tk.CENTER, pady=5)  # 头像居中
 
@@ -362,29 +364,29 @@ class BiliLiveGUI:
 
         # 硬币和B币信息
         coin_frame = ttk.Frame(info_frame)
-        coin_frame.pack(fill=tk.X, pady=5, anchor='center')  # 居中容器
+        coin_frame.pack(fill=tk.X, pady=5, anchor='center')
 
         # 硬币部分
         coin_group = ttk.Frame(coin_frame)
-        coin_group.pack(side=tk.LEFT, expand=True)  # 使用expand实现居中
+        coin_group.pack(side=tk.LEFT, expand=True)
         ttk.Label(coin_group, text="硬币：").pack(side=tk.LEFT, padx=(0, 2))
         self.coin_label = ttk.Label(coin_group, textvariable=self.coin_var, foreground="blue")
         self.coin_label.pack(side=tk.LEFT)
 
         # B币部分
         b_coin_group = ttk.Frame(coin_frame)
-        b_coin_group.pack(side=tk.LEFT, expand=True)  # 使用expand实现居中
+        b_coin_group.pack(side=tk.LEFT, expand=True)
         ttk.Label(b_coin_group, text="B币：").pack(side=tk.LEFT, padx=(0, 2))
         self.b_coin_label = ttk.Label(b_coin_group, textvariable=self.b_coin_var, foreground="blue")
         self.b_coin_label.pack(side=tk.LEFT)
 
         # 成长值信息
         growth_frame = ttk.Frame(info_frame)
-        growth_frame.pack(fill=tk.X, pady=5, anchor='center')  # 居中容器
+        growth_frame.pack(fill=tk.X, pady=5, anchor='center')
 
-        # 将成长值所有部分放入同一框架并居中
+        # 将成长值所有部分放入同一框架
         growth_group = ttk.Frame(growth_frame)
-        growth_group.pack(anchor=tk.CENTER)  # 整体居中
+        growth_group.pack(anchor=tk.CENTER)
 
         ttk.Label(growth_group, text="当前成长").pack(side=tk.LEFT)
         self.growth_label = ttk.Label(growth_group, textvariable=self.growth_var, foreground="green")
@@ -398,31 +400,30 @@ class BiliLiveGUI:
 
         # 统计数据 - 使用额外的框架包裹三个统计项
         stats_container = ttk.Frame(info_frame)
-        stats_container.pack(pady=(15, 5), fill=tk.X, anchor='center')  # 居中容器
+        stats_container.pack(pady=(15, 5), fill=tk.X, anchor='center')
 
         # 关注数
         follow_frame = ttk.Frame(stats_container)
-        follow_frame.pack(side=tk.LEFT, padx=20, expand=True)  # 使用expand和fill
-
-        self.follow_label = ttk.Label(follow_frame, textvariable=self.follow_var, font=("微软雅黑", 12, "bold"), foreground="blue")
+        follow_frame.pack(side=tk.LEFT, padx=20, expand=True)
+        self.follow_label = ttk.Label(follow_frame, textvariable=self.follow_var, font=("微软雅黑", 12, "bold"),
+                                      foreground="blue")
         self.follow_label.pack(anchor=tk.CENTER)
         ttk.Label(follow_frame, text="关注").pack(anchor=tk.CENTER)
 
         # 粉丝数
         fans_frame = ttk.Frame(stats_container)
-        fans_frame.pack(side=tk.LEFT, padx=20, expand=True)  # 使用expand和fill
-
+        fans_frame.pack(side=tk.LEFT, padx=20, expand=True)
         self.fans_label = ttk.Label(fans_frame, textvariable=self.fans_var, font=("微软雅黑", 12, "bold"),
-                  foreground="red")
+                                    foreground="red")
         self.fans_label.pack(anchor=tk.CENTER)
         ttk.Label(fans_frame, text="粉丝").pack(anchor=tk.CENTER)
 
         # 动态数
         dynamic_frame = ttk.Frame(stats_container)
-        dynamic_frame.pack(side=tk.LEFT, padx=20, expand=True)  # 使用expand和fill
+        dynamic_frame.pack(side=tk.LEFT, padx=20, expand=True)
 
         self.dynamic_label = ttk.Label(dynamic_frame, textvariable=self.dynamic_var, font=("微软雅黑", 12, "bold"),
-                  foreground="purple")
+                                       foreground="purple")
         self.dynamic_label.pack(anchor=tk.CENTER)
         ttk.Label(dynamic_frame, text="动态").pack(anchor=tk.CENTER)
 
@@ -590,7 +591,7 @@ class BiliLiveGUI:
 
         def close_qr_window():
             qr_window.destroy()
-            self.log_message("已进行人脸认证！")
+            self.log_message("请确认已进行人脸认证！然后再次进行开播！")
 
         # 添加关闭按钮
         tk.Button(
@@ -608,7 +609,7 @@ class BiliLiveGUI:
         self.log_area.see(tk.END)
         self.log_area.config(state=tk.DISABLED)
 
-        # 更新直播设置页的日志区域（如果存在）
+        # 更新直播设置页的日志区域
         if hasattr(self, 'live_log_area'):
             self.live_log_area.config(state=tk.NORMAL)
             self.live_log_area.insert(tk.END, message + "\n")
@@ -623,7 +624,7 @@ class BiliLiveGUI:
         help_path = os.path.join(my_path, '使用说明.txt')
         if os.path.exists(help_path):
             try:
-                os.startfile(help_path)
+                util.open_file(help_path)
             except:
                 webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
         else:
@@ -686,8 +687,6 @@ class BiliLiveGUI:
             data['room_id'] = self.room_id.get()
             data['csrf_token'] = data['csrf'] = self.csrf.get()
             data['title'] = self.live_title.get()
-
-
 
             # 转换为cookies字典
             cookies = util.ck_str_to_dict(self.cookie_str.get())
@@ -840,7 +839,7 @@ class BiliLiveGUI:
 
     def load_partition_data(self):
         """从 partition.json 加载分区数据"""
-        json_path = os.path.join(my_path, 'partition.json')
+        json_path = os.path.join(my_path, partition_file)
         try:
             with open(json_path, 'r', encoding='utf-8') as f:
                 raw_data = json.load(f)["data"]
@@ -878,7 +877,7 @@ class BiliLiveGUI:
                 self.selected_area.set(main_areas[0])
                 self.update_sub_partitions()
 
-    def update_sub_partitions(self, event=None):
+    def update_sub_partitions(self):
         """更新子分区选项"""
         main_area_name = self.selected_area.get()
         if not main_area_name:
@@ -954,11 +953,14 @@ class BiliLiveGUI:
             app_sec = "af125a0d5279fd576c1b4418a3e8276d"
 
             v_data = dt.version_data
-            v_data['ts'] = requests.get(url="https://api.bilibili.com/x/report/click/now", headers=header).json()["data"]["now"]
+            v_data['ts'] = \
+                requests.get(url="https://api.bilibili.com/x/report/click/now", headers=header).json()["data"]["now"]
             v_data = appsign(v_data, app_key, app_sec)
             query = urllib.parse.urlencode(v_data)
 
-            version_json = requests.get(url=f"https://api.live.bilibili.com/xlive/app-blink/v1/liveVersionInfo/getHomePageLiveVersion?{query}", headers=header, cookies=cookies).json()
+            version_json = requests.get(
+                url=f"https://api.live.bilibili.com/xlive/app-blink/v1/liveVersionInfo/getHomePageLiveVersion?{query}",
+                headers=header, cookies=cookies).json()
 
             data = dt.start_data.copy()
             data['room_id'] = self.room_id.get()
@@ -966,10 +968,9 @@ class BiliLiveGUI:
             data['area_v2'] = area_id
             data['build'] = version_json['data']['build']
             data['version'] = version_json['data']['curr_version']
-            data['ts'] = requests.get(url="https://api.bilibili.com/x/report/click/now", headers=header).json()["data"]["now"]
+            data['ts'] = requests.get(url="https://api.bilibili.com/x/report/click/now", headers=header).json()["data"][
+                "now"]
             data = appsign(data, app_key, app_sec)
-
-            # print(data)
 
             # 设置直播标题
             title_data = dt.title_data.copy()
@@ -1047,7 +1048,6 @@ class BiliLiveGUI:
         self.live_server.set(rtmp_addr)
         self.live_code.set(rtmp_code)
         self.stop_btn.config(state=tk.NORMAL)
-        # self.live_status.config(text="直播已开启", foreground="green")
         self.notebook.select(self.result_tab)
 
     def stop_live(self):
@@ -1102,7 +1102,6 @@ class BiliLiveGUI:
         """停止直播后更新UI"""
         self.live_server.set("")
         self.live_code.set("")
-        # self.live_status.config(text="直播已停止", foreground="red")
         self.notebook.select(self.live_tab)
 
     def copy_server(self):
@@ -1173,4 +1172,4 @@ class BiliLiveGUI:
 if __name__ == "__main__":
     root = tk.Tk()
     app = BiliLiveGUI(root)
-    root.mainloop()
+    app.run()
