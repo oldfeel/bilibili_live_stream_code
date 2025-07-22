@@ -877,7 +877,7 @@ class BiliLiveGUI:
                 self.selected_area.set(main_areas[0])
                 self.update_sub_partitions()
 
-    def update_sub_partitions(self):
+    def update_sub_partitions(self, event=None):
         """更新子分区选项"""
         main_area_name = self.selected_area.get()
         if not main_area_name:
