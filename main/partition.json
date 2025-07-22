@@ -473,6 +473,21 @@
                     "area_type": 0
                 },
                 {
+                    "id": "998",
+                    "parent_id": "2",
+                    "old_area_id": "3",
+                    "name": "命运扳机",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/30cd4929e8e15e98bfeaf769a73b8e189d24975e.png",
+                    "complex_area_name": "",
+                    "pinyin": "mingyunbanji",
+                    "parent_name": "网游",
+                    "area_type": 0
+                },
+                {
                     "id": "249",
                     "parent_id": "2",
                     "old_area_id": "3",
@@ -560,6 +575,21 @@
                     "pic": "https://i0.hdslb.com/bfs/live/79eb4f87853b708f692f9502d028ebc0ace571d2.png",
                     "complex_area_name": "",
                     "pinyin": "wuzhuxingyuan",
+                    "parent_name": "网游",
+                    "area_type": 0
+                },
+                {
+                    "id": "991",
+                    "parent_id": "2",
+                    "old_area_id": "3",
+                    "name": "头号追击",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/deecfb82751f022b4da024bbb823ccb33e7c4f87.webp",
+                    "complex_area_name": "",
+                    "pinyin": "touhaozhuiji",
                     "parent_name": "网游",
                     "area_type": 0
                 },
@@ -1755,6 +1785,36 @@
                     "area_type": 0
                 },
                 {
+                    "id": "989",
+                    "parent_id": "3",
+                    "old_area_id": "12",
+                    "name": "斗罗大陆：猎魂世界",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/e406d330569e901cd243454d9680f2f349762e23.png",
+                    "complex_area_name": "",
+                    "pinyin": "douluodaluliehunshijie",
+                    "parent_name": "手游",
+                    "area_type": 0
+                },
+                {
+                    "id": "997",
+                    "parent_id": "3",
+                    "old_area_id": "12",
+                    "name": "晴空之下",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/7c393aee92bafeb52ae4f5e9d04afd5e87832f6c.png",
+                    "complex_area_name": "",
+                    "pinyin": "qingkongzhixia",
+                    "parent_name": "手游",
+                    "area_type": 0
+                },
+                {
                     "id": "871",
                     "parent_id": "3",
                     "old_area_id": "12",
@@ -1766,6 +1826,21 @@
                     "pic": "https://i0.hdslb.com/bfs/live/9ae8590376fb9fc8ea1484af5bd1c1a9bdf277f2.png",
                     "complex_area_name": "",
                     "pinyin": "sanguomoudingtianxia",
+                    "parent_name": "手游",
+                    "area_type": 0
+                },
+                {
+                    "id": "994",
+                    "parent_id": "3",
+                    "old_area_id": "12",
+                    "name": "伊莫",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/0716501605b7b6be2a85151bee4e81bc08521ebc.png",
+                    "complex_area_name": "",
+                    "pinyin": "yimo",
                     "parent_name": "手游",
                     "area_type": 0
                 },
@@ -1815,6 +1890,21 @@
                     "area_type": 0
                 },
                 {
+                    "id": "999",
+                    "parent_id": "3",
+                    "old_area_id": "12",
+                    "name": "奥特曼：超时空英雄",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/675b900058fb6e677b691b19c6dd5f8deeba3064.png",
+                    "complex_area_name": "",
+                    "pinyin": "aotemanchaoshikongyingxiong",
+                    "parent_name": "手游",
+                    "area_type": 0
+                },
+                {
                     "id": "981",
                     "parent_id": "3",
                     "old_area_id": "12",
@@ -1841,6 +1931,21 @@
                     "pic": "https://i0.hdslb.com/bfs/live/82edc4454c681a39a75c3fc1f43c213d329edbb1.png",
                     "complex_area_name": "",
                     "pinyin": "yingzhishi",
+                    "parent_name": "手游",
+                    "area_type": 0
+                },
+                {
+                    "id": "990",
+                    "parent_id": "3",
+                    "old_area_id": "12",
+                    "name": "永远的蔚蓝星球",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/59cc51c808a064181a2b82aff58599fae2aae85b.png",
+                    "complex_area_name": "",
+                    "pinyin": "yongyuandeweilanxingqiu",
                     "parent_name": "手游",
                     "area_type": 0
                 },
@@ -3741,6 +3846,21 @@
                     "area_type": 0
                 },
                 {
+                    "id": "1001",
+                    "parent_id": "6",
+                    "old_area_id": "1",
+                    "name": "明末：渊虚之羽",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/01d7c7c458d7d57f387cc290231ae3a0630fc803.png",
+                    "complex_area_name": "",
+                    "pinyin": "mingmoyuanxuzhiyu",
+                    "parent_name": "单机游戏",
+                    "area_type": 0
+                },
+                {
                     "id": "988",
                     "parent_id": "6",
                     "old_area_id": "1",
@@ -3936,6 +4056,21 @@
                     "area_type": 0
                 },
                 {
+                    "id": "1000",
+                    "parent_id": "6",
+                    "old_area_id": "1",
+                    "name": "霓虹深渊2",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/5bb9b06a76e8bc19a91304ab1e8232d019149fec.png",
+                    "complex_area_name": "",
+                    "pinyin": "nihongshenyuan2",
+                    "parent_name": "单机游戏",
+                    "area_type": 0
+                },
+                {
                     "id": "987",
                     "parent_id": "6",
                     "old_area_id": "1",
@@ -3947,6 +4082,21 @@
                     "pic": "https://i0.hdslb.com/bfs/live/18d84dcbe4c74546c7807dd5cbdd43a603312fdf.png",
                     "complex_area_name": "",
                     "pinyin": "Rematch",
+                    "parent_name": "单机游戏",
+                    "area_type": 0
+                },
+                {
+                    "id": "996",
+                    "parent_id": "6",
+                    "old_area_id": "1",
+                    "name": "矩阵：零日危机",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/fa79361e24a29a8c5db3d7370f9a3ebf7099fbe8.png",
+                    "complex_area_name": "",
+                    "pinyin": "juzhenlingriweiji",
                     "parent_name": "单机游戏",
                     "area_type": 0
                 },
@@ -5117,21 +5267,6 @@
             "name": "聊天室",
             "list": [
                 {
-                    "id": "943",
-                    "parent_id": "14",
-                    "old_area_id": "6",
-                    "name": "找人玩",
-                    "act_id": "0",
-                    "pk_status": "1",
-                    "hot_status": 0,
-                    "lock_status": "1",
-                    "pic": "https://i0.hdslb.com/bfs/live/b1d3614fbdbe5c5abb58fb1ef5e836b9d11b016b.png",
-                    "complex_area_name": "",
-                    "pinyin": "zhaorenwan",
-                    "parent_name": "聊天室",
-                    "area_type": 0
-                },
-                {
                     "id": "818",
                     "parent_id": "14",
                     "old_area_id": "6",
@@ -5173,6 +5308,21 @@
                     "pic": "https://i0.hdslb.com/bfs/live/ec23ead030ee6662576668bdf261beadfee99095.png",
                     "complex_area_name": "",
                     "pinyin": "xingqu",
+                    "parent_name": "聊天室",
+                    "area_type": 0
+                },
+                {
+                    "id": "943",
+                    "parent_id": "14",
+                    "old_area_id": "6",
+                    "name": "找人玩",
+                    "act_id": "0",
+                    "pk_status": "1",
+                    "hot_status": 0,
+                    "lock_status": "0",
+                    "pic": "https://i0.hdslb.com/bfs/live/b1d3614fbdbe5c5abb58fb1ef5e836b9d11b016b.png",
+                    "complex_area_name": "",
+                    "pinyin": "zhaorenwan",
                     "parent_name": "聊天室",
                     "area_type": 0
                 }
