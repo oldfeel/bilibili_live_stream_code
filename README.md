@@ -39,7 +39,7 @@
 
 1. 本程序作者：[Chace](https://github.com/ChaceQC)。  
 2. 本程序制作特别感谢：[琴子](https://github.com/Truble-Maker)，[Roberta001](https://github.com/Roberta001)。
-3. 感谢贡献者：[DarkModest](https://github.com/DarkModest)。
+3. 感谢贡献者：[DarkModest](https://github.com/DarkModest)，[hxzhao527](https://github.com/hxzhao527)。
 
 ### TODO：
 暂无，欢迎提出需求。
