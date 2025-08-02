@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：0.1.2
+版本：0.1.3
 
-更新时间：2025-07-21
+更新时间：2025-08-02
 """
 import ctypes
 import tkinter
