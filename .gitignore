@@ -4,3 +4,4 @@
 /dist/
 /build/
 /main/__pycache__/
+/main/logs/
