@@ -640,6 +640,12 @@ class BiliLiveGUI:
         # 更新状态栏
         self.status_var.set(message)
 
+        # 写入日志文件
+        log_dir = os.path.join(my_path, "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file_path = os.path.join(log_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d')}.log")
+        util.log_to_file(f_message, log_file_path)
+
     def show_help(self):
         """显示使用说明"""
         help_path = os.path.join(my_path, '使用说明.txt')

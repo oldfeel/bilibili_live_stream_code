@@ -82,3 +82,17 @@ def ck_str_to_dict(ck_str: str) -> dict:
     cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
     cookies = {key: unquote(value) for key, value in cookies_pattern.findall(ck_str)}
     return cookies
+
+def log_to_file(log_message: str, log_path: str = "log.log"):
+    """
+    将日志写入文件
+
+    :param log_message: 日志信息
+    :param log_path: 日志文件路径
+    :return: None
+    """
+    try:
+        with open(log_path, "a", encoding="utf-8") as log_file:
+            log_file.write(log_message + "\n")
+    except Exception as e:
+        print(f"写入日志文件失败: {str(e)}")
