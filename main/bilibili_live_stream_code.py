@@ -3,10 +3,11 @@
 
 作者：Chace
 
-版本：1.0.5
+版本：1.0.6
 
 更新时间：2025-08-02
 """
+import datetime
 import hashlib
 import io
 import json
@@ -37,7 +38,7 @@ last_settings_file = 'last_settings.json'
 partition_file = 'partition.json'
 config_file = 'config.ini'
 my_path = os.getcwd()
-now_version = "1.1.4"
+now_version = "1.1.5"
 
 
 def appsign(params, appkey, appsec):
@@ -95,6 +96,7 @@ class BiliLiveGUI:
         # 创建选项卡
         self.notebook = ttk.Notebook(self.main_frame)
         self.notebook.pack(fill=tk.BOTH, expand=True)
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
 
         # 创建选项卡
         self.setup_tab = ttk.Frame(self.notebook)
@@ -158,6 +160,14 @@ class BiliLiveGUI:
     # 设置窗口居中显示
     def center_window(self, width, height):
         util.center_window(self.root, width, height)
+
+    def on_tab_changed(self, event):
+        """选项卡切换事件处理"""
+        selected_tab = self.notebook.select()
+        tab_name = self.notebook.tab(selected_tab, "text")
+
+        if tab_name == "账号设置":
+            self.show_up_info()
 
     def check_first_run(self):
         """检查是否是首次运行"""
@@ -247,6 +257,8 @@ class BiliLiveGUI:
         self.follow_var.set(follow)
         self.fans_var.set(fans)
         self.dynamic_var.set(dynamic)
+
+        self.log_message("已更新UP主信息！")
 
     def show_up_info(self):
         """显示UP主信息"""
@@ -609,16 +621,19 @@ class BiliLiveGUI:
 
     def log_message(self, message):
         """记录日志消息，并同步更新所有日志区域"""
+        # 格式化日志消息
+        f_message: str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + " - " + message
+
         # 更新主日志区域（推流信息页）
         self.log_area.config(state=tk.NORMAL)
-        self.log_area.insert(tk.END, message + "\n")
+        self.log_area.insert(tk.END, f_message + "\n")
         self.log_area.see(tk.END)
         self.log_area.config(state=tk.DISABLED)
 
         # 更新直播设置页的日志区域
         if hasattr(self, 'live_log_area'):
             self.live_log_area.config(state=tk.NORMAL)
-            self.live_log_area.insert(tk.END, message + "\n")
+            self.live_log_area.insert(tk.END, f_message + "\n")
             self.live_log_area.see(tk.END)
             self.live_log_area.config(state=tk.DISABLED)
 
