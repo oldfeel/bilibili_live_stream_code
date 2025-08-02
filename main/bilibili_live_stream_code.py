@@ -37,7 +37,7 @@ last_settings_file = 'last_settings.json'
 partition_file = 'partition.json'
 config_file = 'config.ini'
 my_path = os.getcwd()
-now_version = "1.1.3"
+now_version = "1.1.4"
 
 
 def appsign(params, appkey, appsec):
