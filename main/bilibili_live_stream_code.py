@@ -229,7 +229,7 @@ class BiliLiveGUI:
         growth = info_json["data"]["level_info"]["current_exp"]
         next_level = int(current_level) + 1
         next_exp = info_json["data"]["level_info"]["next_exp"]
-        if next_exp == '--':
+        if next_exp == "--":
             need_growth = 0
             next_level = int(current_level)
         else:
