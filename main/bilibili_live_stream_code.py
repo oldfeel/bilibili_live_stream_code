@@ -299,7 +299,7 @@ class BiliLiveGUI:
             self.bullet_entry.delete(0, tk.END)
         except Exception as e:
             self.log_message(f"发送弹幕时出错: {str(e)}")
-            messagebox.showerror("错误", f"发送弹幕时出错:\n{str(e)}")
+            messagebox.showerror("错误", f"发送弹幕出错！")
 
     def create_setup_tab(self):
         """创建账号设置选项卡"""
@@ -728,7 +728,7 @@ class BiliLiveGUI:
             self.save_last_settings()
         except Exception as e:
             self.log_message(f"更新直播标题时出错: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("错误", f"更新直播标题时出错:\n{str(e)}"))
+            self.root.after(0, lambda: messagebox.showerror("错误", f"更新直播标题出错！"))
 
     def update_partition(self):
         """手动更新直播分区"""
@@ -772,7 +772,7 @@ class BiliLiveGUI:
             self.save_last_settings()
         except Exception as e:
             self.log_message(f"更新直播分区时出错: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("错误", f"更新直播分区时出错:\n{str(e)}"))
+            self.root.after(0, lambda: messagebox.showerror("错误", "更新直播分区出错！"))
 
     def use_cookies_file(self):
         """使用cookies.txt文件"""
@@ -798,7 +798,7 @@ class BiliLiveGUI:
                         messagebox.showerror("错误", "cookies.txt文件格式不正确")
             except Exception as e:
                 self.log_message(f"打开或读取cookies.txt文件时出错: {str(e)}")
-                messagebox.showerror("错误", f"打开或读取cookies.txt文件时出错:\n{str(e)}")
+                messagebox.showerror("错误", f"打开或读取cookies.txt文件出错")
                 self.root.focus_force()
         else:
             messagebox.showwarning("警告", f"未找到{cookies_file}文件")
@@ -823,7 +823,7 @@ class BiliLiveGUI:
             self.save_settings()
         except Exception as e:
             self.log_message(f"获取账号信息出错: {str(e)}")
-            messagebox.showerror("错误", f"获取账号信息出错: {str(e)}")
+            messagebox.showerror("错误", f"获取账号信息出错！")
 
     def save_settings(self):
         """保存设置到cookies.txt"""
@@ -844,7 +844,7 @@ class BiliLiveGUI:
             # self.notebook.select(self.live_tab)
         except Exception as e:
             self.log_message(f"保存设置时出错: {str(e)}")
-            messagebox.showerror("错误", f"保存设置时出错:\n{str(e)}")
+            messagebox.showerror("错误", f"保存设置出错！")
 
     def refresh_partitions(self):
         """刷新直播分区"""
@@ -873,7 +873,7 @@ class BiliLiveGUI:
                     sub_areas[item['id']] = item['name']
                 self.partition_data[cat_name] = sub_areas
         except Exception as e:
-            messagebox.showerror("错误", f"加载分区数据失败: {str(e)}")
+            messagebox.showerror("错误", f"加载分区数据失败！")
 
     def _refresh_partitions_thread(self, cookies):
         try:
@@ -887,7 +887,7 @@ class BiliLiveGUI:
             self.log_message("直播分区获取成功！")
         except Exception as e:
             self.log_message(f"获取直播分区失败: {str(e)}")
-            messagebox.showerror("错误", f"获取直播分区失败:\n{str(e)}")
+            messagebox.showerror("错误", f"获取直播分区失败！")
 
     def update_partition_ui(self):
         """更新一级分区UI"""
@@ -1060,7 +1060,7 @@ class BiliLiveGUI:
 
         except Exception as e:
             self.log_message(f"开始直播时出错: {str(e)}")
-            messagebox.showerror("错误", f"开始直播时出错:\n{str(e)}")
+            messagebox.showerror("错误", f"开始直播出错")
         finally:
             self.root.after(0, lambda: self.start_btn.config(state=tk.NORMAL))
 
@@ -1115,7 +1115,7 @@ class BiliLiveGUI:
 
         except Exception as e:
             self.log_message(f"停止直播时出错: {str(e)}")
-            messagebox.showerror("错误", f"停止直播时出错:\n{str(e)}")
+            messagebox.showerror("错误", f"停止直播出错！")
         finally:
             self.root.after(0, lambda: self.stop_btn.config(state=tk.NORMAL))
 
@@ -1163,8 +1163,8 @@ class BiliLiveGUI:
                 pass
 
         except Exception as e:
-            self.log_message(f"保存文件出错: {str(e)}")
-            messagebox.showerror("错误", f"保存文件出错:\n{str(e)}")
+            self.log_message(f"保存文件至桌面时出错: {str(e)}")
+            messagebox.showerror("错误", f"保存文件至桌面出错！")
 
     def export_to_file(self):
         """导出推流码到指定文件"""
@@ -1187,7 +1187,7 @@ class BiliLiveGUI:
                 messagebox.showinfo("成功", f"推流信息已保存到:\n{file_path}")
             except Exception as e:
                 self.log_message(f"保存文件出错: {str(e)}")
-                messagebox.showerror("错误", f"保存文件出错:\n{str(e)}")
+                messagebox.showerror("错误", f"保存文件出错！")
 
 
 if __name__ == "__main__":
