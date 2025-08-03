@@ -23,15 +23,12 @@ my_path = os.getcwd()
 
 def send_bullet(msg: str, csrf: str, roomid: int, cookies: dict) -> tuple[bool, str]:
     query: str = get_w_rid_and_wts(other_data_dict={"web_location": 444.8})[1]
-    print(query)
     data = dt.bullet_data
     data["msg"] = msg
     data["csrf_token"] = data["csrf"] = csrf
     data["roomid"] = int(roomid)
     data["rnd"] = int(time.time())
-    # print(data)
     resp = requests.post(f'https://api.live.bilibili.com/msg/send?{query}', cookies=cookies, data=data, headers=dt.header)
-    # print(resp.text)
 
     if resp.json()['code'] == 1003212:
         return False, "超出限制长度"
