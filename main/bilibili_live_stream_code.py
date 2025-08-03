@@ -66,14 +66,6 @@ class BiliLiveGUI:
         self.root.resizable(False, False)
         self.root.configure(bg="#f0f0f0")
 
-        # 应用图标
-        try:
-            icon_path = os.path.join(my_path, 'B站图标.ico')
-            if os.path.exists(icon_path):
-                self.root.iconbitmap(icon_path)
-        except:
-            self.log_message("加载图标文件失败")
-
         # 设置样式
         self.style = ttk.Style()
         self.style.configure("TFrame", background="#f0f0f0")
@@ -149,6 +141,14 @@ class BiliLiveGUI:
         self.use_cookies_file()
         self.update_partition_ui()
         self.load_last_settings()
+
+        # 应用图标
+        try:
+            icon_path = os.path.join(my_path, 'B站图标.ico')
+            if os.path.exists(icon_path):
+                self.root.iconbitmap(icon_path)
+        except:
+            self.log_message("加载图标文件失败")
 
         # 检查首次运行
         self.check_first_run()
