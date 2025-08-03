@@ -5,7 +5,7 @@
 
 版本：1.0.6
 
-更新时间：2025-08-02
+更新时间：2025-08-03
 """
 import datetime
 import hashlib
@@ -149,7 +149,6 @@ class BiliLiveGUI:
         self.use_cookies_file()
         self.update_partition_ui()
         self.load_last_settings()
-        self.show_up_info()
 
         # 检查首次运行
         self.check_first_run()
@@ -564,55 +563,63 @@ class BiliLiveGUI:
 
     def _show_up_info_thread(self):
         cookies = util.ck_str_to_dict(self.cookie_str.get())
-        info_json = requests.get(url='https://api.bilibili.com/x/web-interface/nav', cookies=cookies,
-                                 headers=dt.header).json()
-
-        # 更新头像显示
-        avatar_url = info_json["data"]["face"]
-        response = requests.get(url=avatar_url, stream=True)
-        img_data = response.content
-        img = Image.open(io.BytesIO(img_data))
-        img = img.resize((150, 150))
-        self.avatar_image = ImageTk.PhotoImage(img)
-        self.avatar_image_label.config(image=self.avatar_image)
-
-        # 更新昵称显示
-        name = info_json["data"]["uname"]
-        current_level = info_json["data"]["level_info"]["current_level"]
-        self.up_name_label.config(text=f"{name}（Lv.{current_level}）")
-
-        # 更新硬币显示
-        coin = info_json["data"]["money"]
-        self.coin_var.set(coin)
-
-        # 更新B币显示
-        bcoin = info_json["data"]["wallet"]["bcoin_balance"]
-        self.b_coin_var.set(bcoin)
-
-        # 更新成长值信息
-        growth = info_json["data"]["level_info"]["current_exp"]
-        next_level = int(current_level) + 1
-        next_exp = info_json["data"]["level_info"]["next_exp"]
-        if next_exp == "--":
-            need_growth = 0
-            next_level = int(current_level)
+        success: bool
+        info_json: dict
+        success, info_json = self.request_api(api="https://api.bilibili.com/x/web-interface/nav", cookies=cookies,
+                                              headers=dt.header, method=self.ApiMethods.GET, success_msg="UP主基本信息获取成功！")
+        if not success or info_json["code"] != 0:
+            self.log_message(f"获取UP主基本信息失败！{info_json}")
         else:
-            need_growth = int(next_exp) - growth
-        self.growth_var.set(growth)
-        self.next_level_var.set(f"Lv.{next_level}")
-        self.need_growth_var.set(need_growth)
+            # 更新头像显示
+            avatar_url = info_json["data"]["face"]
+            response = requests.get(url=avatar_url, stream=True)
+            img_data = response.content
+            img = Image.open(io.BytesIO(img_data))
+            img = img.resize((150, 150))
+            self.avatar_image = ImageTk.PhotoImage(img)
+            self.avatar_image_label.config(image=self.avatar_image)
+
+            # 更新昵称显示
+            name = info_json["data"]["uname"]
+            current_level = info_json["data"]["level_info"]["current_level"]
+            self.up_name_label.config(text=f"{name}（Lv.{current_level}）")
+
+            # 更新硬币显示
+            coin = info_json["data"]["money"]
+            self.coin_var.set(coin)
+
+            # 更新B币显示
+            bcoin = info_json["data"]["wallet"]["bcoin_balance"]
+            self.b_coin_var.set(bcoin)
+
+            # 更新成长值信息
+            growth = info_json["data"]["level_info"]["current_exp"]
+            next_level = int(current_level) + 1
+            next_exp = info_json["data"]["level_info"]["next_exp"]
+            if next_exp == "--":
+                need_growth = 0
+                next_level = int(current_level)
+            else:
+                need_growth = int(next_exp) - growth
+            self.growth_var.set(growth)
+            self.next_level_var.set(f"Lv.{next_level}")
+            self.need_growth_var.set(need_growth)
 
         # 更新统计数据
-        stat_json = requests.get(url="https://api.bilibili.com/x/web-interface/nav/stat", cookies=cookies,
-                                 headers=dt.header).json()
-        follow = stat_json["data"]["following"]
-        fans = stat_json["data"]["follower"]
-        dynamic = stat_json["data"]["dynamic_count"]
-        self.follow_var.set(follow)
-        self.fans_var.set(fans)
-        self.dynamic_var.set(dynamic)
+        stat_json: dict
+        success, stat_json = self.request_api(api="https://api.bilibili.com/x/web-interface/nav/stat", cookies=cookies,
+                                              headers=dt.header, method=self.ApiMethods.GET, success_msg="UP主统计信息获取成功！")
+        if not success:
+            self.log_message("获取UP主统计信息失败！")
+        else:
+            follow = stat_json["data"]["following"]
+            fans = stat_json["data"]["follower"]
+            dynamic = stat_json["data"]["dynamic_count"]
+            self.follow_var.set(follow)
+            self.fans_var.set(fans)
+            self.dynamic_var.set(dynamic)
 
-        self.log_message("已更新UP主信息！")
+            self.log_message("已更新UP主信息！")
 
 
     # 分区相关函数
@@ -720,15 +727,13 @@ class BiliLiveGUI:
             cookies = util.ck_str_to_dict(self.cookie_str.get())
 
             # 发送设置标题请求
-            response = requests.post(
-                'https://api.live.bilibili.com/room/v1/Room/update',
-                cookies=cookies,
-                headers=header,
-                data=data
-            )
-
-            if response.status_code != 200 or response.json()['code'] != 0:
-                raise Exception(f"设置标题失败: {response.json()}")
+            success: bool
+            resp: dict
+            success, resp = self.request_api(api="https://api.live.bilibili.com/room/v1/Room/update", cookies=cookies,
+                                              headers=header, data=data, method=self.ApiMethods.POST,
+                                              success_msg="更新直播标题请求成功！")
+            if not success or resp['code'] != 0:
+                raise Exception(resp)
 
             self.root.after(0, lambda: messagebox.showinfo("成功", "直播标题已更新！"))
             self.log_message("直播标题已更新！")
@@ -764,15 +769,10 @@ class BiliLiveGUI:
             cookies = util.ck_str_to_dict(self.cookie_str.get())
 
             # 发送更新分区请求
-            response = requests.post(
-                'https://api.live.bilibili.com/room/v1/Room/update',
-                cookies=cookies,
-                headers=header,
-                data=data
-            )
-
-            if response.status_code != 200 or response.json()['code'] != 0:
-                raise Exception(f"更新分区失败: {response.json()}")
+            success, resp = self.request_api(api="https://api.live.bilibili.com/room/v1/Room/update", cookies=cookies,
+                                              headers=header, data=data, method=self.ApiMethods.POST, success_msg="更新直播分区请求成功！")
+            if not success or resp['code'] != 0:
+                raise Exception(resp)
 
             self.log_message("直播分区已更新！")
             self.root.after(0, lambda: messagebox.showinfo("成功", "直播分区已更新！"))
@@ -812,21 +812,28 @@ class BiliLiveGUI:
     def _start_live_thread(self, area_id):
         try:
             # 准备请求参数
+            success: bool
+            resp: dict
             header = dt.header
-            # 转换为cookies字典
             cookies = util.ck_str_to_dict(self.cookie_str.get())
             app_key = "aae92bc66f3edfab"
             app_sec = "af125a0d5279fd576c1b4418a3e8276d"
 
+            success, resp = self.request_api(api="https://api.bilibili.com/x/report/click/now",
+                                              headers=header, method=self.ApiMethods.GET, success_msg="时间戳获取成功！")
+            if not success or resp['code'] != 0:
+                raise Exception(resp)
+
             v_data = dt.version_data
-            v_data['ts'] = \
-                requests.get(url="https://api.bilibili.com/x/report/click/now", headers=header).json()["data"]["now"]
+            v_data['ts'] = resp["data"]["now"]
             v_data = appsign(v_data, app_key, app_sec)
             query = urllib.parse.urlencode(v_data)
 
-            version_json = requests.get(
-                url=f"https://api.live.bilibili.com/xlive/app-blink/v1/liveVersionInfo/getHomePageLiveVersion?{query}",
-                headers=header, cookies=cookies).json()
+            version_json: dict
+            success, version_json = self.request_api(api=f"https://api.live.bilibili.com/xlive/app-blink/v1/liveVersionInfo/getHomePageLiveVersion?{query}",
+                                                     cookies=cookies, headers=header, method=self.ApiMethods.GET, success_msg="直播姬版本信息获取成功！")
+            if not success or version_json['code'] != 0:
+                raise Exception(version_json)
 
             data = dt.start_data.copy()
             data['room_id'] = self.room_id.get()
@@ -834,8 +841,11 @@ class BiliLiveGUI:
             data['area_v2'] = area_id
             data['build'] = version_json['data']['build']
             data['version'] = version_json['data']['curr_version']
-            data['ts'] = requests.get(url="https://api.bilibili.com/x/report/click/now", headers=header).json()["data"][
-                "now"]
+            success, resp = self.request_api(api="https://api.bilibili.com/x/report/click/now", headers=header,
+                                             method=self.ApiMethods.GET, success_msg="时间戳获取成功！")
+            if not success or resp['code'] != 0:
+                raise Exception(resp)
+            data['ts'] = resp["data"]["now"]
             data = appsign(data, app_key, app_sec)
 
             # 设置直播标题
@@ -845,67 +855,47 @@ class BiliLiveGUI:
             title_data['title'] = self.live_title.get()
 
             # 发送设置标题请求
-            title_response = requests.post(
-                'https://api.live.bilibili.com/room/v1/Room/update',
-                cookies=cookies,
-                headers=header,
-                data=title_data
-            )
-
-            if title_response.status_code != 200 or title_response.json()['code'] != 0:
-                self.log_message(f"设置直播标题失败: {title_response.json()}")
-                messagebox.showerror("错误", "设置直播标题失败！")
-                return
-
-            self.log_message("直播标题设置成功")
+            success, title_response = self.request_api(api="https://api.live.bilibili.com/room/v1/Room/update", cookies=cookies,
+                                              headers=header, data=title_data, method=self.ApiMethods.POST, success_msg="更新直播标题请求成功！")
+            if not success or title_response['code'] != 0:
+                raise Exception(title_response)
+            self.log_message("直播标题设置成功！")
 
             # 获取推流码
             self.log_message("正在获取直播推流码...")
-            response = requests.post(
-                'https://api.live.bilibili.com/room/v1/Room/startLive',
-                cookies=cookies,
-                headers=header,
-                data=data
-            )
-
-            if response.status_code != 200 or response.json()['code'] != 0:
-                print(response.json())
-
-                if response.json()['code'] == 60024:
-                    self.log_message("获取推流码失败: 需要进行人脸认证")
-                    qr: str = response.json()['data']['qr']
-
-                    # 生成二维码并显示
+            response: dict
+            success, response = self.request_api(api="https://api.live.bilibili.com/room/v1/Room/startLive", cookies=cookies,
+                                              headers=header, data=data, method=self.ApiMethods.POST, success_msg="开始直播请求成功！")
+            if not success:
+                self.log_message("获取推流码失败！")
+                messagebox.showerror("错误", "获取推流码失败，详细错误信息请查看日志！")
+                raise Exception(response)
+            else:
+                if response['code'] == 60024:
+                    self.log_message("获取推流码失败: 需要进行人脸认证！")
+                    messagebox.showinfo("提示", "获取推流码失败: 请扫码进行人脸认证！")
+                    qr: str = response['data']['qr']
                     self.root.after(0, lambda: self.show_qr_code(qr))
-
-                else:
-                    self.log_message(f"获取推流码失败: {response.json()}")
-                    messagebox.showerror("错误", "获取推流码失败，cookie可能已失效！")
-
-                    # 删除cookies文件
-                    cookies_path = os.path.join(my_path, cookies_file)
-                    if os.path.exists(cookies_path):
-                        try:
-                            os.remove(cookies_path)
-                            self.log_message("已删除失效的cookies.txt文件")
-                        except Exception as e:
-                            self.log_message(f"删除cookies.txt文件时出错: {str(e)}")
-
-                return
+                    return
+                elif response['code'] != 0:
+                    self.log_message(f"获取推流码失败！")
+                    messagebox.showerror("错误", "获取推流码失败，详细错误信息请查看日志！")
+                    raise Exception(response)
 
             # 获取推流信息
-            rtmp_addr = response.json()['data']['rtmp']['addr']
-            rtmp_code = response.json()['data']['rtmp']['code']
+            rtmp_addr = response['data']['rtmp']['addr']
+            rtmp_code = response['data']['rtmp']['code']
+            self.log_message("获取推流码成功！")
 
             # 更新UI
             self.root.after(0, lambda: self._update_after_start(rtmp_addr, rtmp_code))
 
-            self.log_message("直播已开启！请使用推流码进行直播")
-            messagebox.showinfo("成功", "直播已开启！请使用推流码进行直播")
+            self.log_message("直播已开启！请使用推流码进行直播！")
+            messagebox.showinfo("成功", "直播已开启！请使用推流码进行直播！")
 
         except Exception as e:
             self.log_message(f"开始直播时出错: {str(e)}")
-            messagebox.showerror("错误", f"开始直播出错")
+            messagebox.showerror("错误", "开始直播出错")
         finally:
             self.root.after(0, lambda: self.start_btn.config(state=tk.NORMAL))
 
@@ -940,17 +930,12 @@ class BiliLiveGUI:
             cookies = util.ck_str_to_dict(self.cookie_str.get())
 
             # 发送停止直播请求
-            response = requests.post(
-                'https://api.live.bilibili.com/room/v1/Room/stopLive',
-                cookies=cookies,
-                headers=header,
-                data=data
-            )
-
-            if response.status_code != 200 or response.json()['code'] != 0:
-                self.log_message(f"停止直播失败: {response.json()}")
-                messagebox.showerror("错误", "停止直播失败！")
-                return
+            success: bool
+            response: dict
+            success, response = self.request_api(api="https://api.live.bilibili.com/room/v1/Room/stopLive", cookies=cookies,
+                                                 headers=header, data=data, method=self.ApiMethods.POST, success_msg="停止直播请求成功！")
+            if not success or response['code'] != 0:
+                raise Exception(response)
 
             # 更新UI
             self.root.after(0, self._update_after_stop)
@@ -960,7 +945,7 @@ class BiliLiveGUI:
 
         except Exception as e:
             self.log_message(f"停止直播时出错: {str(e)}")
-            messagebox.showerror("错误", f"停止直播出错！")
+            messagebox.showerror("错误", "停止直播出错！")
         finally:
             self.root.after(0, lambda: self.stop_btn.config(state=tk.NORMAL))
 
@@ -1109,6 +1094,39 @@ class BiliLiveGUI:
                 webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
         else:
             webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
+
+    class ApiMethods:
+        GET = "GET"
+        POST = "POST"
+
+    def request_api(self, api: str, params: dict = None, data: dict = None, cookies: dict = None, headers: dict = None, method: str = ApiMethods.POST,
+                    success_msg: str = "请求成功") -> tuple[bool, dict | str]:
+        """
+        请求API
+        :param api: API地址
+        :param params: 请求参数
+        :param data: 请求携带数据
+        :param cookies: Cookie
+        :param headers: 请求头
+        :param method: 请求方法
+        :param success_msg: 成功提示信息
+        :return: (是否成功, 返回数据)
+        """
+        try:
+            if method == self.ApiMethods.GET:
+                resp = requests.get(url=api, params=params, cookies=cookies, headers=headers, data=data)
+            elif method == self.ApiMethods.POST:
+                resp = requests.post(url=api, params=params, cookies=cookies, headers=headers, data=data)
+
+            if resp.status_code == 200:
+                self.log_message(success_msg)
+                return True, resp.json()
+            else:
+                self.log_message(f"{api} 请求失败 - code: {resp.status_code} data: {resp.text}")
+                return False, resp.text
+        except Exception as e:
+            self.log_message(f"{api} 请求失败: {str(e)}")
+            return False, str(e)
 
 
     # 设置保存和加载函数
