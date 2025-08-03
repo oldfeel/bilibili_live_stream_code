@@ -72,7 +72,7 @@ class BiliLiveGUI:
             if os.path.exists(icon_path):
                 self.root.iconbitmap(icon_path)
         except:
-            pass
+            self.log_message("加载图标文件失败")
 
         # 设置样式
         self.style = ttk.Style()
@@ -157,8 +157,10 @@ class BiliLiveGUI:
     def run(self):
         self.root.mainloop()
 
-    # 设置窗口居中显示
+
+    # 窗口和UI相关函数
     def center_window(self, width, height):
+        """设置窗口居中显示"""
         util.center_window(self.root, width, height)
 
     def on_tab_changed(self, event):
@@ -169,6 +171,8 @@ class BiliLiveGUI:
         if tab_name == "账号设置":
             self.show_up_info()
 
+
+    # 初始化和配置相关函数
     def check_first_run(self):
         """检查是否是首次运行"""
         config_path = os.path.join(my_path, config_file)
@@ -208,99 +212,8 @@ class BiliLiveGUI:
                                 "4. 直播结束后点击'停止直播'\n\n"
                                 "详细使用说明：https://download.chacewebsite.cn/uploads/使用说明.txt")
 
-    def _show_up_info_thread(self):
-        cookies = util.ck_str_to_dict(self.cookie_str.get())
-        info_json = requests.get(url='https://api.bilibili.com/x/web-interface/nav', cookies=cookies,
-                                 headers=dt.header).json()
 
-        # 更新头像显示
-        avatar_url = info_json["data"]["face"]
-        response = requests.get(url=avatar_url, stream=True)
-        img_data = response.content
-        img = Image.open(io.BytesIO(img_data))
-        img = img.resize((150, 150))
-        self.avatar_image = ImageTk.PhotoImage(img)
-        self.avatar_image_label.config(image=self.avatar_image)
-
-        # 更新昵称显示
-        name = info_json["data"]["uname"]
-        current_level = info_json["data"]["level_info"]["current_level"]
-        self.up_name_label.config(text=f"{name}（Lv.{current_level}）")
-
-        # 更新硬币显示
-        coin = info_json["data"]["money"]
-        self.coin_var.set(coin)
-
-        # 更新B币显示
-        bcoin = info_json["data"]["wallet"]["bcoin_balance"]
-        self.b_coin_var.set(bcoin)
-
-        # 更新成长值信息
-        growth = info_json["data"]["level_info"]["current_exp"]
-        next_level = int(current_level) + 1
-        next_exp = info_json["data"]["level_info"]["next_exp"]
-        if next_exp == "--":
-            need_growth = 0
-            next_level = int(current_level)
-        else:
-            need_growth = int(next_exp) - growth
-        self.growth_var.set(growth)
-        self.next_level_var.set(f"Lv.{next_level}")
-        self.need_growth_var.set(need_growth)
-
-        # 更新统计数据
-        stat_json = requests.get(url="https://api.bilibili.com/x/web-interface/nav/stat", cookies=cookies,
-                                 headers=dt.header).json()
-        follow = stat_json["data"]["following"]
-        fans = stat_json["data"]["follower"]
-        dynamic = stat_json["data"]["dynamic_count"]
-        self.follow_var.set(follow)
-        self.fans_var.set(fans)
-        self.dynamic_var.set(dynamic)
-
-        self.log_message("已更新UP主信息！")
-
-    def show_up_info(self):
-        """显示UP主信息"""
-        if self.cookie_str.get() == "":
-            return
-        else:
-            thread = threading.Thread(target=self._show_up_info_thread)
-            thread.start()
-
-    def send_bullet_callback(self):
-        """点击发送弹幕按钮时调用"""
-        msg = self.bullet_entry.get().strip()
-        if not msg:
-            messagebox.showwarning("警告", "请输入弹幕内容！")
-            return
-
-        if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
-            messagebox.showwarning("警告", "请先设置账号信息！")
-            return
-
-        # 转换为cookies字典
-        cookies = util.ck_str_to_dict(self.cookie_str.get())
-
-        try:
-            roomid = int(self.room_id.get())
-            csrf = self.csrf.get()
-
-            success, message = send_bullet(msg, csrf, roomid, cookies)
-
-            if success:
-                self.log_message(f"弹幕发送成功: {msg}")
-                # messagebox.showinfo("成功", f"弹幕发送成功: {message}")
-            else:
-                self.log_message(f"弹幕发送失败: {message}")
-                messagebox.showerror("错误", f"弹幕发送失败: {message}")
-
-            # 清空输入框
-            self.bullet_entry.delete(0, tk.END)
-        except Exception as e:
-            self.log_message(f"发送弹幕时出错: {str(e)}")
-            messagebox.showerror("错误", f"发送弹幕出错！")
-
+    # UI创建函数
     def create_setup_tab(self):
         """创建账号设置选项卡"""
         setup_frame = ttk.Frame(self.setup_tab)
@@ -571,128 +484,216 @@ class BiliLiveGUI:
         self.log_area.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.log_area.config(state=tk.DISABLED)
 
-    def show_qr_code(self, qr_url):
-        """生成并显示二维码"""
-        # 创建新窗口
-        qr_window = tk.Toplevel(self.root)
-        qr_window.title("人脸认证二维码")
-        width = 400
-        height = 450
-        util.center_window(qr_window, width, height)
-        qr_window.resizable(False, False)
 
-        # 生成二维码
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(qr_url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-
-        # 转换为Tkinter可用的图像
-        img_tk = ImageTk.PhotoImage(img)
-
-        # 显示二维码
-        label = tk.Label(qr_window, image=img_tk)
-        label.image = img_tk  # 保持引用，避免被垃圾回收
-        label.pack(pady=10)
-
-        # 添加提示文字
-        tk.Label(
-            qr_window,
-            text="请使用B站客户端扫描二维码完成人脸认证",
-            font=("微软雅黑", 10)
-        ).pack(pady=10)
-
-        def close_qr_window():
-            qr_window.destroy()
-            self.log_message("请确认已进行人脸认证！然后再次进行开播！")
-
-        # 添加关闭按钮
-        tk.Button(
-            qr_window,
-            text="关闭",
-            command=close_qr_window,
-            width=15
-        ).pack(pady=10)
-
-    def log_message(self, message):
-        """记录日志消息，并同步更新所有日志区域"""
-        # 格式化日志消息
-        f_message: str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + " - " + message
-
-        # 更新主日志区域（推流信息页）
-        self.log_area.config(state=tk.NORMAL)
-        self.log_area.insert(tk.END, f_message + "\n")
-        self.log_area.see(tk.END)
-        self.log_area.config(state=tk.DISABLED)
-
-        # 更新直播设置页的日志区域
-        if hasattr(self, 'live_log_area'):
-            self.live_log_area.config(state=tk.NORMAL)
-            self.live_log_area.insert(tk.END, f_message + "\n")
-            self.live_log_area.see(tk.END)
-            self.live_log_area.config(state=tk.DISABLED)
-
-        # 更新状态栏
-        self.status_var.set(message)
-
-        # 写入日志文件
-        log_dir = os.path.join(my_path, "logs")
-        os.makedirs(log_dir, exist_ok=True)
-        log_file_path = os.path.join(log_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d')}.log")
-        util.log_to_file(f_message, log_file_path)
-
-    def show_help(self):
-        """显示使用说明"""
-        help_path = os.path.join(my_path, '使用说明.txt')
-        if os.path.exists(help_path):
+    # 账号信息相关函数
+    def use_cookies_file(self):
+        """使用cookies.txt文件"""
+        cookies_path = os.path.join(my_path, cookies_file)
+        if os.path.exists(cookies_path):
             try:
-                util.open_file(help_path)
-            except:
-                webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
+                with open(cookies_path, 'r', encoding='utf-8') as file:
+                    value = []
+                    for line in file:
+                        if line.strip():
+                            value.append(line.split(':')[1].strip())
+
+                    if len(value) >= 3:
+                        self.room_id.set(value[0])
+                        self.cookie_str.set(value[1])
+                        self.csrf.set(value[2])
+                        self.log_message("成功加载cookies.txt文件")
+                        self.root.focus_force()
+                    else:
+                        messagebox.showerror("错误", "cookies.txt文件格式不正确")
+            except Exception as e:
+                self.log_message(f"打开或读取cookies.txt文件时出错: {str(e)}")
+                messagebox.showerror("错误", f"打开或读取cookies.txt文件出错")
+                self.root.focus_force()
         else:
-            webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
+            messagebox.showwarning("警告", f"未找到{cookies_file}文件")
+            self.root.focus_force()
 
-    def save_last_settings(self):
-        """保存最后一次使用的标题和分区信息"""
-        settings = {
-            "live_title": self.live_title.get(),
-            "selected_area": self.selected_area.get(),
-            "selected_sub_area": self.selected_sub_area.get()
-        }
-        file_path = os.path.join(my_path, last_settings_file)
+    def auto_get_cookies(self):
+        """自动获取cookies"""
+        self.log_message("开始自动获取账号信息...")
+        # 在新线程中执行获取cookies的操作
+        threading.Thread(target=self._auto_get_cookies_thread, daemon=True).start()
+
+    def _auto_get_cookies_thread(self):
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(settings, f, ensure_ascii=False, indent=4)
+            room_id, cookie_str, csrf = get_cookies()
+            if not room_id or not cookie_str or not csrf:
+                raise Exception("请检查是否扫码成功。")
+            self.room_id.set(room_id)
+            self.cookie_str.set(cookie_str)
+            self.csrf.set(csrf)
+            self.log_message("账号信息获取成功！")
+            messagebox.showinfo("成功", "账号信息获取成功！")
+            self.save_settings()
         except Exception as e:
-            self.log_message(f"保存上次设置失败: {str(e)}")
+            self.log_message(f"获取账号信息出错: {str(e)}")
+            messagebox.showerror("错误", f"获取账号信息出错！")
 
-    def load_last_settings(self):
-        """加载上次使用的标题和分区信息"""
-        file_path = os.path.join(my_path, last_settings_file)
-        if not os.path.exists(file_path):
+    def save_settings(self):
+        """保存设置到cookies.txt"""
+        if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
+            messagebox.showwarning("警告", "请填写所有字段！")
             return
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                settings = json.load(f)
+            cookies_path = os.path.join(my_path, cookies_file)
+            with open(cookies_path, 'w', encoding='utf-8') as file:
+                file.write('room_id:' + str(self.room_id.get()) + '\n\n\n')
+                file.write('cookie:' + str(self.cookie_str.get()) + '\n\n\n')
+                file.write('csrf:' + str(self.csrf.get()) + '\n')
 
-            # 恢复标题
-            if settings.get("live_title"):
-                self.live_title.set(settings["live_title"])
-
-            # 恢复分区选择
-            if settings.get("selected_area") and settings.get("selected_sub_area"):
-                self.selected_area.set(settings["selected_area"])
-                self.update_sub_partitions()  # 更新子分区下拉框
-                self.selected_sub_area.set(settings["selected_sub_area"])
+            self.log_message("账号信息保存成功！")
+            messagebox.showinfo("成功", "账号信息保存成功！")
+            self.show_up_info()
         except Exception as e:
-            self.log_message(f"加载上次设置失败: {str(e)}")
+            self.log_message(f"保存设置时出错: {str(e)}")
+            messagebox.showerror("错误", f"保存设置出错！")
 
+    def show_up_info(self):
+        """显示UP主信息"""
+        if self.cookie_str.get() == "":
+            return
+        else:
+            thread = threading.Thread(target=self._show_up_info_thread)
+            thread.start()
+
+    def _show_up_info_thread(self):
+        cookies = util.ck_str_to_dict(self.cookie_str.get())
+        info_json = requests.get(url='https://api.bilibili.com/x/web-interface/nav', cookies=cookies,
+                                 headers=dt.header).json()
+
+        # 更新头像显示
+        avatar_url = info_json["data"]["face"]
+        response = requests.get(url=avatar_url, stream=True)
+        img_data = response.content
+        img = Image.open(io.BytesIO(img_data))
+        img = img.resize((150, 150))
+        self.avatar_image = ImageTk.PhotoImage(img)
+        self.avatar_image_label.config(image=self.avatar_image)
+
+        # 更新昵称显示
+        name = info_json["data"]["uname"]
+        current_level = info_json["data"]["level_info"]["current_level"]
+        self.up_name_label.config(text=f"{name}（Lv.{current_level}）")
+
+        # 更新硬币显示
+        coin = info_json["data"]["money"]
+        self.coin_var.set(coin)
+
+        # 更新B币显示
+        bcoin = info_json["data"]["wallet"]["bcoin_balance"]
+        self.b_coin_var.set(bcoin)
+
+        # 更新成长值信息
+        growth = info_json["data"]["level_info"]["current_exp"]
+        next_level = int(current_level) + 1
+        next_exp = info_json["data"]["level_info"]["next_exp"]
+        if next_exp == "--":
+            need_growth = 0
+            next_level = int(current_level)
+        else:
+            need_growth = int(next_exp) - growth
+        self.growth_var.set(growth)
+        self.next_level_var.set(f"Lv.{next_level}")
+        self.need_growth_var.set(need_growth)
+
+        # 更新统计数据
+        stat_json = requests.get(url="https://api.bilibili.com/x/web-interface/nav/stat", cookies=cookies,
+                                 headers=dt.header).json()
+        follow = stat_json["data"]["following"]
+        fans = stat_json["data"]["follower"]
+        dynamic = stat_json["data"]["dynamic_count"]
+        self.follow_var.set(follow)
+        self.fans_var.set(fans)
+        self.dynamic_var.set(dynamic)
+
+        self.log_message("已更新UP主信息！")
+
+
+    # 分区相关函数
+    def load_partition_data(self):
+        """从 partition.json 加载分区数据"""
+        json_path = os.path.join(my_path, partition_file)
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                raw_data = json.load(f)["data"]
+
+            self.partition_data = {}
+            for category in raw_data:
+                cat_name = category['name']
+                sub_areas = {}
+                for item in category.get('list', []):
+                    sub_areas[item['id']] = item['name']
+                self.partition_data[cat_name] = sub_areas
+        except Exception as e:
+            messagebox.showerror("错误", f"加载分区数据失败！")
+
+    def refresh_partitions(self):
+        """刷新直播分区"""
+        if not self.cookie_str.get():
+            messagebox.showwarning("警告", "请先设置账号信息！")
+            return
+
+        # 转换为cookies字典
+        cookies = util.ck_str_to_dict(self.cookie_str.get())
+
+        self.log_message("正在获取直播分区...")
+        threading.Thread(target=self._refresh_partitions_thread, args=(cookies,), daemon=True).start()
+
+    def _refresh_partitions_thread(self, cookies):
+        try:
+            get_new_partition(cookies)
+
+            self.load_partition_data()
+
+            # 更新分区下拉框
+            self.root.after(0, self.update_partition_ui)
+
+            self.log_message("直播分区获取成功！")
+        except Exception as e:
+            self.log_message(f"获取直播分区失败: {str(e)}")
+            messagebox.showerror("错误", f"获取直播分区失败！")
+
+    def update_partition_ui(self):
+        """更新一级分区UI"""
+        if self.partition_data:
+            main_areas = list(self.partition_data.keys())
+            self.partition_cat['values'] = main_areas
+            if main_areas:
+                self.selected_area.set(main_areas[0])
+                self.update_sub_partitions()
+
+    def update_sub_partitions(self, event=None):
+        """更新子分区选项"""
+        main_area_name = self.selected_area.get()
+        if not main_area_name:
+            return
+
+        sub_areas_dict = self.partition_data.get(main_area_name, {})
+        sub_areas = list(sub_areas_dict.values())
+
+        self.partition_sub['values'] = sub_areas
+        if sub_areas:
+            self.selected_sub_area.set(sub_areas[0])
+
+    def get_selected_area_id(self):
+        """获取选中的分区ID"""
+        main_area_name = self.selected_area.get()
+        sub_area_name = self.selected_sub_area.get()
+
+        if main_area_name and sub_area_name and main_area_name in self.partition_data:
+            for area_id, area_name in self.partition_data[main_area_name].items():
+                if area_name == sub_area_name:
+                    return area_id
+        return None
+
+
+    # 直播设置相关函数
     def update_title(self):
         """手动更新直播标题"""
         if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
@@ -780,154 +781,8 @@ class BiliLiveGUI:
             self.log_message(f"更新直播分区时出错: {str(e)}")
             self.root.after(0, lambda: messagebox.showerror("错误", "更新直播分区出错！"))
 
-    def use_cookies_file(self):
-        """使用cookies.txt文件"""
-        cookies_path = os.path.join(my_path, cookies_file)
-        if os.path.exists(cookies_path):
-            try:
-                with open(cookies_path, 'r', encoding='utf-8') as file:
-                    value = []
-                    for line in file:
-                        if line.strip():
-                            value.append(line.split(':')[1].strip())
 
-                    if len(value) >= 3:
-                        self.room_id.set(value[0])
-                        self.cookie_str.set(value[1])
-                        self.csrf.set(value[2])
-                        self.log_message("成功加载cookies.txt文件")
-                        # messagebox.showinfo("成功", "Cookies文件加载成功！")
-                        # self.notebook.select(self.live_tab)
-                        self.root.focus_force()
-                        # self.root.after(0, lambda: self.partition_cat.focus())
-                    else:
-                        messagebox.showerror("错误", "cookies.txt文件格式不正确")
-            except Exception as e:
-                self.log_message(f"打开或读取cookies.txt文件时出错: {str(e)}")
-                messagebox.showerror("错误", f"打开或读取cookies.txt文件出错")
-                self.root.focus_force()
-        else:
-            messagebox.showwarning("警告", f"未找到{cookies_file}文件")
-            self.root.focus_force()
-
-    def auto_get_cookies(self):
-        """自动获取cookies"""
-        self.log_message("开始自动获取账号信息...")
-        # 在新线程中执行获取cookies的操作
-        threading.Thread(target=self._auto_get_cookies_thread, daemon=True).start()
-
-    def _auto_get_cookies_thread(self):
-        try:
-            room_id, cookie_str, csrf = get_cookies()
-            if not room_id or not cookie_str or not csrf:
-                raise Exception("请检查是否扫码成功。")
-            self.room_id.set(room_id)
-            self.cookie_str.set(cookie_str)
-            self.csrf.set(csrf)
-            self.log_message("账号信息获取成功！")
-            messagebox.showinfo("成功", "账号信息获取成功！")
-            self.save_settings()
-        except Exception as e:
-            self.log_message(f"获取账号信息出错: {str(e)}")
-            messagebox.showerror("错误", f"获取账号信息出错！")
-
-    def save_settings(self):
-        """保存设置到cookies.txt"""
-        if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
-            messagebox.showwarning("警告", "请填写所有字段！")
-            return
-
-        try:
-            cookies_path = os.path.join(my_path, cookies_file)
-            with open(cookies_path, 'w', encoding='utf-8') as file:
-                file.write('room_id:' + str(self.room_id.get()) + '\n\n\n')
-                file.write('cookie:' + str(self.cookie_str.get()) + '\n\n\n')
-                file.write('csrf:' + str(self.csrf.get()) + '\n')
-
-            self.log_message("账号信息保存成功！")
-            messagebox.showinfo("成功", "账号信息保存成功！")
-            self.show_up_info()
-            # self.notebook.select(self.live_tab)
-        except Exception as e:
-            self.log_message(f"保存设置时出错: {str(e)}")
-            messagebox.showerror("错误", f"保存设置出错！")
-
-    def refresh_partitions(self):
-        """刷新直播分区"""
-        if not self.cookie_str.get():
-            messagebox.showwarning("警告", "请先设置账号信息！")
-            return
-
-        # 转换为cookies字典
-        cookies = util.ck_str_to_dict(self.cookie_str.get())
-
-        self.log_message("正在获取直播分区...")
-        threading.Thread(target=self._refresh_partitions_thread, args=(cookies,), daemon=True).start()
-
-    def load_partition_data(self):
-        """从 partition.json 加载分区数据"""
-        json_path = os.path.join(my_path, partition_file)
-        try:
-            with open(json_path, 'r', encoding='utf-8') as f:
-                raw_data = json.load(f)["data"]
-
-            self.partition_data = {}
-            for category in raw_data:
-                cat_name = category['name']
-                sub_areas = {}
-                for item in category.get('list', []):
-                    sub_areas[item['id']] = item['name']
-                self.partition_data[cat_name] = sub_areas
-        except Exception as e:
-            messagebox.showerror("错误", f"加载分区数据失败！")
-
-    def _refresh_partitions_thread(self, cookies):
-        try:
-            get_new_partition(cookies)
-
-            self.load_partition_data()
-
-            # 更新分区下拉框
-            self.root.after(0, self.update_partition_ui)
-
-            self.log_message("直播分区获取成功！")
-        except Exception as e:
-            self.log_message(f"获取直播分区失败: {str(e)}")
-            messagebox.showerror("错误", f"获取直播分区失败！")
-
-    def update_partition_ui(self):
-        """更新一级分区UI"""
-        if self.partition_data:
-            main_areas = list(self.partition_data.keys())
-            self.partition_cat['values'] = main_areas
-            if main_areas:
-                self.selected_area.set(main_areas[0])
-                self.update_sub_partitions()
-
-    def update_sub_partitions(self, event=None):
-        """更新子分区选项"""
-        main_area_name = self.selected_area.get()
-        if not main_area_name:
-            return
-
-        sub_areas_dict = self.partition_data.get(main_area_name, {})
-        sub_areas = list(sub_areas_dict.values())
-
-        self.partition_sub['values'] = sub_areas
-        if sub_areas:
-            self.selected_sub_area.set(sub_areas[0])
-
-    def get_selected_area_id(self):
-        """获取选中的分区ID"""
-        main_area_name = self.selected_area.get()
-        sub_area_name = self.selected_sub_area.get()
-
-        if main_area_name and sub_area_name and main_area_name in self.partition_data:
-            for area_id, area_name in self.partition_data[main_area_name].items():
-                if area_name == sub_area_name:
-                    return area_id
-        return None
-
+    # 直播操作相关函数
     def start_live(self):
         """开始直播"""
         if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
@@ -950,26 +805,10 @@ class BiliLiveGUI:
         self.log_message("正在开始直播...")
         self.start_btn.config(state=tk.DISABLED)
 
-        # 在新线程中执行开始直播的操作
         threading.Thread(target=self._start_live_thread, args=(area_id,), daemon=True).start()
 
         self.save_last_settings()
 
-    def join_room(self):
-        """进入直播间"""
-        if not self.room_id.get():
-            messagebox.showwarning("警告", "请先设置直播间ID！")
-            return
-
-        try:
-            room_id = int(self.room_id.get())
-            url = f"https://live.bilibili.com/{room_id}"
-            webbrowser.open(url)
-            self.log_message(f"已打开直播间: {url}")
-        except ValueError:
-            messagebox.showerror("错误", "直播间ID格式不正确！")
-            self.log_message("直播间ID格式不正确")
-    
     def _start_live_thread(self, area_id):
         try:
             # 准备请求参数
@@ -1131,6 +970,186 @@ class BiliLiveGUI:
         self.live_code.set("")
         self.notebook.select(self.live_tab)
 
+    def join_room(self):
+        """进入直播间"""
+        if not self.room_id.get():
+            messagebox.showwarning("警告", "请先设置直播间ID！")
+            return
+
+        try:
+            room_id = int(self.room_id.get())
+            url = f"https://live.bilibili.com/{room_id}"
+            webbrowser.open(url)
+            self.log_message(f"已打开直播间: {url}")
+        except ValueError:
+            messagebox.showerror("错误", "直播间ID格式不正确！")
+            self.log_message("直播间ID格式不正确")
+
+
+    # 弹幕相关函数
+    def send_bullet_callback(self):
+        """发送弹幕"""
+        msg = self.bullet_entry.get().strip()
+        if not msg:
+            messagebox.showwarning("警告", "请输入弹幕内容！")
+            return
+
+        if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
+            messagebox.showwarning("警告", "请先设置账号信息！")
+            return
+
+        threading.Thread(target=self._send_bullet_callback_thread, args=(msg,), daemon=True).start()
+
+    def _send_bullet_callback_thread(self, msg):
+        # 转换为cookies字典
+        cookies = util.ck_str_to_dict(self.cookie_str.get())
+
+        try:
+            roomid = int(self.room_id.get())
+            csrf = self.csrf.get()
+
+            success, message = send_bullet(msg, csrf, roomid, cookies)
+
+            if success:
+                self.log_message(f"弹幕发送成功: {msg}")
+            else:
+                self.log_message(f"弹幕发送失败: {message}")
+                messagebox.showerror("错误", f"弹幕发送失败: {message}")
+
+            # 清空输入框
+            self.bullet_entry.delete(0, tk.END)
+        except Exception as e:
+            self.log_message(f"发送弹幕时出错: {str(e)}")
+            messagebox.showerror("错误", f"发送弹幕出错！")
+
+
+    # 工具函数
+    def show_qr_code(self, qr_url):
+        """生成并显示二维码"""
+        # 创建新窗口
+        qr_window = tk.Toplevel(self.root)
+        qr_window.title("人脸认证二维码")
+        width = 400
+        height = 450
+        util.center_window(qr_window, width, height)
+        qr_window.resizable(False, False)
+
+        # 生成二维码
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(qr_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        # 转换为Tkinter可用的图像
+        img_tk = ImageTk.PhotoImage(img)
+
+        # 显示二维码
+        label = tk.Label(qr_window, image=img_tk)
+        label.image = img_tk  # 保持引用，避免被垃圾回收
+        label.pack(pady=10)
+
+        # 添加提示文字
+        tk.Label(
+            qr_window,
+            text="请使用B站客户端扫描二维码完成人脸认证",
+            font=("微软雅黑", 10)
+        ).pack(pady=10)
+
+        def close_qr_window():
+            qr_window.destroy()
+            self.log_message("请确认已进行人脸认证！然后再次进行开播！")
+
+        # 添加关闭按钮
+        tk.Button(
+            qr_window,
+            text="关闭",
+            command=close_qr_window,
+            width=15
+        ).pack(pady=10)
+
+    def log_message(self, message):
+        """记录日志消息"""
+        # 格式化日志消息
+        f_message: str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + " - " + message
+
+        # 更新主日志区域（推流信息页）
+        self.log_area.config(state=tk.NORMAL)
+        self.log_area.insert(tk.END, f_message + "\n")
+        self.log_area.see(tk.END)
+        self.log_area.config(state=tk.DISABLED)
+
+        # 更新直播设置页的日志区域
+        if hasattr(self, 'live_log_area'):
+            self.live_log_area.config(state=tk.NORMAL)
+            self.live_log_area.insert(tk.END, f_message + "\n")
+            self.live_log_area.see(tk.END)
+            self.live_log_area.config(state=tk.DISABLED)
+
+        # 更新状态栏
+        self.status_var.set(message)
+
+        # 写入日志文件
+        log_dir = os.path.join(my_path, "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file_path = os.path.join(log_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d')}.log")
+        util.log_to_file(f_message, log_file_path)
+
+    def show_help(self):
+        """显示使用说明"""
+        help_path = os.path.join(my_path, '使用说明.txt')
+        if os.path.exists(help_path):
+            try:
+                util.open_file(help_path)
+            except:
+                webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
+        else:
+            webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
+
+
+    # 设置保存和加载函数
+    def save_last_settings(self):
+        """保存最后一次使用的标题和分区信息"""
+        settings = {
+            "live_title": self.live_title.get(),
+            "selected_area": self.selected_area.get(),
+            "selected_sub_area": self.selected_sub_area.get()
+        }
+        file_path = os.path.join(my_path, last_settings_file)
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(settings, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            self.log_message(f"保存上次设置失败: {str(e)}")
+
+    def load_last_settings(self):
+        """加载上次使用的标题和分区信息"""
+        file_path = os.path.join(my_path, last_settings_file)
+        if not os.path.exists(file_path):
+            return
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+
+            # 恢复标题
+            if settings.get("live_title"):
+                self.live_title.set(settings["live_title"])
+
+            # 恢复分区选择
+            if settings.get("selected_area") and settings.get("selected_sub_area"):
+                self.selected_area.set(settings["selected_area"])
+                self.update_sub_partitions()  # 更新子分区下拉框
+                self.selected_sub_area.set(settings["selected_sub_area"])
+        except Exception as e:
+            self.log_message(f"加载上次设置失败: {str(e)}")
+
+
+    # 推流信息导出函数
     def copy_server(self):
         """复制服务器地址"""
         if self.live_server.get():
