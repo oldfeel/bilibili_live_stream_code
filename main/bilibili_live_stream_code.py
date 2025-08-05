@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.7
+版本：1.0.8
 
-更新时间：2025-08-03
+更新时间：2025-08-05
 """
 import datetime
 import hashlib
@@ -21,7 +21,8 @@ import sys
 import requests
 import webbrowser
 import qrcode
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw
+import pystray
 
 # 导入原始模块
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -108,6 +109,7 @@ class BiliLiveGUI:
         self.live_server = tk.StringVar()
         self.avatar_image_label = tk.Label
         self.avatar_image = ImageTk.PhotoImage(file=os.path.join(my_path, 'B站图标.ico'))
+        self.close_to_tray = tk.BooleanVar(value=True)
 
         # 分区数据
         self.partition_data = {}
@@ -150,10 +152,23 @@ class BiliLiveGUI:
         except:
             self.log_message("加载图标文件失败")
 
+        # 托盘图标相关变量
+        self.tray_icon = None
+        self.tray_thread = None
+        self.is_minimized_to_tray = False
+
         # 检查首次运行
         self.check_first_run()
 
+        # 创建托盘图标
+        self.create_tray_icon()
+
+        # 绑定窗口关闭事件
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
     def run(self):
+        if self.tray_icon is None:
+            self.create_tray_icon()
         self.root.mainloop()
 
 
@@ -267,6 +282,15 @@ class BiliLiveGUI:
         ttk.Button(setup_frame, text="查看使用说明", command=self.show_help).grid(
             row=5, column=0, pady=10, sticky="w"
         )
+
+        # 添加单选框
+        settings_frame = ttk.LabelFrame(setup_frame, text="程序设置")
+        settings_frame.grid(row=5, column=1, sticky="nsew", padx=60, pady=10)
+        ttk.Checkbutton(
+            settings_frame,
+            text="关闭时最小化到托盘",
+            variable=self.close_to_tray
+        ).pack(anchor=tk.W, padx=5, pady=5)
 
         # UP信息展示部分
         info_frame = ttk.LabelFrame(setup_frame, text="UP信息")
@@ -482,6 +506,99 @@ class BiliLiveGUI:
         self.log_area = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, height=8)
         self.log_area.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.log_area.config(state=tk.DISABLED)
+
+
+    # 系统托盘相关函数
+    def create_tray_icon(self):
+        """创建系统托盘图标"""
+        # 加载图标
+        try:
+            icon_path = os.path.join(my_path, 'B站图标.ico')
+            if os.path.exists(icon_path):
+                image = Image.open(icon_path)
+            else:
+                # 创建默认图标
+                width = 64
+                height = 64
+                color1 = (69, 139, 116)  # 主色
+                color2 = (255, 255, 255)  # 文字色
+                image = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+                dc = ImageDraw.Draw(image)
+                dc.ellipse((0, 0, width - 1, height - 1), fill=color1)
+                text = "B"
+                text_width, text_height = dc.textsize(text)
+                dc.text(((width - text_width) / 2, (height - text_height) / 2), text, fill=color2)
+        except Exception as e:
+            self.log_message(f"创建托盘图标失败: {str(e)}")
+            return
+
+        # 创建菜单
+        menu = (
+            pystray.MenuItem('显示主窗口', self.show_main_window),
+            pystray.MenuItem('开始直播', self.start_live),
+            pystray.MenuItem('停止直播', self.stop_live),
+            pystray.MenuItem('退出', self.quit_application),
+        )
+
+        # 创建托盘图标
+        self.tray_icon = pystray.Icon("bilibili_live", image, "B站推流码获取工具", menu)
+
+        self.get_close_method()
+
+        # 在新线程中运行托盘图标
+        self.tray_thread = threading.Thread(target=self.tray_icon.run, daemon=True)
+        self.tray_thread.start()
+
+    def get_close_method(self):
+        """获取关闭窗口的方法"""
+        config_path = os.path.join(my_path, config_file)
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as file:
+                file.readline()
+                is_true = file.readline().split(':')[1].strip()
+                if int(is_true) == 1:
+                    self.close_to_tray.set(True)
+                else:
+                    self.close_to_tray.set(False)
+        else:
+            messagebox.showerror("错误", "未找到config.ini，请尝试重新安装此程序！")
+
+    def show_main_window(self, icon=None, item=None):
+        """从托盘恢复主窗口"""
+        if self.is_minimized_to_tray:
+            self.root.deiconify()
+            self.root.state('normal')  # 在Windows上可能需要
+            self.is_minimized_to_tray = False
+            self.root.lift()  # 将窗口置于最前
+            self.root.focus_force()  # 强制获取焦点
+
+    def minimize_to_tray(self):
+        """最小化到托盘"""
+        self.root.withdraw()
+        self.is_minimized_to_tray = True
+
+    def quit_application(self, icon=None, item=None):
+        """退出应用程序"""
+        if self.tray_icon:
+            self.tray_icon.stop()
+        self.root.quit()
+        self.root.destroy()
+        os._exit(0)
+
+    def on_close(self):
+        """处理窗口关闭事件"""
+        config_path = os.path.join(my_path, config_file)
+        with open(config_path, 'w', encoding='utf-8') as file:
+            file.write('use_first: 0\n')
+            if self.close_to_tray.get():
+                file.write('close: 1')
+            else:
+                file.write('close: 0')
+
+        if self.close_to_tray.get():
+            self.minimize_to_tray()
+        else:
+            self.quit_application()
 
 
     # 账号信息相关函数
