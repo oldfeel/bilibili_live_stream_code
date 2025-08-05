@@ -5,7 +5,7 @@
 
 版本：1.0.8
 
-更新时间：2025-08-05
+更新时间：2025-08-06
 """
 import datetime
 import hashlib
@@ -157,11 +157,11 @@ class BiliLiveGUI:
         self.tray_thread = None
         self.is_minimized_to_tray = False
 
-        # 检查首次运行
-        self.check_first_run()
-
         # 创建托盘图标
         self.create_tray_icon()
+
+        # 检查首次运行
+        self.check_first_run()
 
         # 绑定窗口关闭事件
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -193,11 +193,13 @@ class BiliLiveGUI:
         if os.path.exists(config_path):
             with open(config_path, 'r', encoding='utf-8') as file:
                 is_first = file.readline().split(':')[1].strip()
+                second_line = file.readline()
                 if int(is_first) == 1:
                     self.show_first_run_info()
                     # 更新配置文件
                     with open(config_path, 'w', encoding='utf-8') as file:
-                        file.write('use_first: 0')
+                        file.write('use_first: 0\n')
+                        file.write(second_line)
         else:
             messagebox.showerror("错误", "未找到config.ini，请尝试重新安装此程序！")
 
@@ -540,10 +542,19 @@ class BiliLiveGUI:
             pystray.MenuItem('退出', self.quit_application),
         )
 
-        # 创建托盘图标
-        self.tray_icon = pystray.Icon("bilibili_live", image, "B站推流码获取工具", menu)
-
         self.get_close_method()
+
+        # 创建托盘图标
+        try:
+            self.tray_icon = pystray.Icon("bilibili_live", image, "B站推流码获取工具", menu)
+        except:
+            try:
+                self.tray_icon = pystray.Icon("bilibili_live", image, "bilibili_code", menu)
+            except Exception as e:
+                self.log_message(f"创建托盘图标失败: {str(e)}")
+                self.on_close()
+                return
+
 
         # 在新线程中运行托盘图标
         self.tray_thread = threading.Thread(target=self.tray_icon.run, daemon=True)
