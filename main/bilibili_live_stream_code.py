@@ -158,7 +158,8 @@ class BiliLiveGUI:
         self.is_minimized_to_tray = False
 
         # 创建托盘图标
-        self.create_tray_icon()
+        if sys.platform != "linux":
+            self.create_tray_icon()
 
         # 检查首次运行
         self.check_first_run()
@@ -167,7 +168,7 @@ class BiliLiveGUI:
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def run(self):
-        if self.tray_icon is None:
+        if self.tray_icon is None and sys.platform != "linux":
             self.create_tray_icon()
         self.root.mainloop()
 
@@ -285,14 +286,15 @@ class BiliLiveGUI:
             row=5, column=0, pady=10, sticky="w"
         )
 
-        # 添加单选框
-        settings_frame = ttk.LabelFrame(setup_frame, text="程序设置")
-        settings_frame.grid(row=5, column=1, sticky="nsew", padx=60, pady=10)
-        ttk.Checkbutton(
-            settings_frame,
-            text="关闭时最小化到托盘",
-            variable=self.close_to_tray
-        ).pack(anchor=tk.W, padx=5, pady=5)
+        if sys.platform != "linux":
+            # 添加单选框
+            settings_frame = ttk.LabelFrame(setup_frame, text="程序设置")
+            settings_frame.grid(row=5, column=1, sticky="nsew", padx=60, pady=10)
+            ttk.Checkbutton(
+                settings_frame,
+                text="关闭时最小化到托盘",
+                variable=self.close_to_tray
+            ).pack(anchor=tk.W, padx=5, pady=5)
 
         # UP信息展示部分
         info_frame = ttk.LabelFrame(setup_frame, text="UP信息")
@@ -598,16 +600,19 @@ class BiliLiveGUI:
 
     def on_close(self):
         """处理窗口关闭事件"""
-        config_path = os.path.join(my_path, config_file)
-        with open(config_path, 'w', encoding='utf-8') as file:
-            file.write('use_first: 0\n')
-            if self.close_to_tray.get():
-                file.write('close: 1')
-            else:
-                file.write('close: 0')
+        if sys.platform != "linux":
+            config_path = os.path.join(my_path, config_file)
+            with open(config_path, 'w', encoding='utf-8') as file:
+                file.write('use_first: 0\n')
+                if self.close_to_tray.get():
+                    file.write('close: 1')
+                else:
+                    file.write('close: 0')
 
-        if self.close_to_tray.get():
-            self.minimize_to_tray()
+            if self.close_to_tray.get():
+                self.minimize_to_tray()
+            else:
+                self.quit_application()
         else:
             self.quit_application()
 
