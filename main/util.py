@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：0.1.3
+版本：0.1.4
 
-更新时间：2025-08-02
+更新时间：2025-08-07
 """
 import ctypes
 import tkinter
@@ -16,6 +16,7 @@ from ctypes import wintypes
 from pathlib import Path
 import re
 from urllib.parse import unquote
+import psutil
 
 
 def center_window(root: tkinter.Tk or tkinter.Toplevel, width: int, height: int) -> None:
@@ -96,3 +97,38 @@ def log_to_file(log_message: str, log_path: str = "log.log"):
             log_file.write(log_message + "\n")
     except Exception as e:
         print(f"写入日志文件失败: {str(e)}")
+
+def is_already_running(dir_path: str = "", file_name: str = "BiliLiveGUI.lock"):
+    """检查程序是否已经在运行"""
+    lock_file = os.path.join(dir_path, file_name)
+
+    if os.path.exists(lock_file):
+        try:
+            # 读取锁文件中的 PID
+            with open(lock_file, "r") as f:
+                pid = int(f.read().strip())
+
+            # 检查该 PID 是否仍在运行
+            if psutil.pid_exists(pid):
+                return True
+            else:
+                # PID 不存在，可能是程序上次异常退出，删除旧的锁文件
+                os.remove(lock_file)
+                return False
+        except (ValueError, psutil.NoSuchProcess):
+            # 文件内容无效或进程不存在，删除旧的锁文件
+            os.remove(lock_file)
+            return False
+    return False
+
+def create_lock_file(dir_path: str = "", file_name: str = "BiliLiveGUI.lock"):
+    """创建锁文件并写入当前进程的 PID"""
+    lock_file = os.path.join(dir_path, file_name)
+    with open(lock_file, "w") as f:
+        f.write(str(os.getpid()))
+
+def cleanup_lock_file(dir_path: str = "", file_name: str = "BiliLiveGUI.lock"):
+    """程序退出时删除锁文件"""
+    lock_file = os.path.join(dir_path, file_name)
+    if os.path.exists(lock_file):
+        os.remove(lock_file)

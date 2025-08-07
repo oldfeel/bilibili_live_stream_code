@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.8
+版本：1.0.9
 
-更新时间：2025-08-06
+更新时间：2025-08-07
 """
 import datetime
 import hashlib
@@ -592,6 +592,8 @@ class BiliLiveGUI:
 
     def quit_application(self, icon=None, item=None):
         """退出应用程序"""
+        util.cleanup_lock_file(my_path, "BiliLiveGUI.lock")
+
         if self.tray_icon:
             self.tray_icon.stop()
         self.root.quit()
@@ -1367,6 +1369,12 @@ class BiliLiveGUI:
 
 
 if __name__ == "__main__":
+    if util.is_already_running(my_path, "BiliLiveGUI.lock"):
+        messagebox.showerror("错误", "程序已经在运行！")
+        sys.exit(1)
+
+    util.create_lock_file(my_path, "BiliLiveGUI.lock")
+
     root = tk.Tk()
     app = BiliLiveGUI(root)
     app.run()
