@@ -5,3 +5,4 @@
 /build/
 /main/__pycache__/
 /main/logs/
+/main/BiliLiveGUI.lock
